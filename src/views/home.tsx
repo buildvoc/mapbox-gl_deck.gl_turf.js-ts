@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// eslint-disable-next-line import/no-webpack-loader-syntax
 import mapboxgl from 'mapbox-gl';
 import { DeckGL } from '@deck.gl/react/typed'
 import {GeoJsonLayer} from '@deck.gl/layers/typed'
@@ -23,9 +22,11 @@ import { computeGeoMatrics, geoTransform } from "../utils/geo-operations";
 
 import './home.css'
 
+// prevent mapboxgl from being transpiled by Babel
+//@ts-ignore 
+// eslint-disable-next-line import/no-webpack-loader-syntax
+mapboxgl.workerClass = require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJpYW4yM21hcGJveCIsImEiOiJjbGR1Y3FudWIwNGtoM3FvNWF0ZjBtb2Z1In0.fsi9kFZgx1r5HR_tAxn9_g';
-
-
 
 const Home = (): JSX.Element => {
     const [inputs, setInputs] = useState<UserInputs>({ lotCoverage: 50, floorNumber: 10, floorHeight: 10 })
@@ -96,7 +97,7 @@ const Home = (): JSX.Element => {
           opacity: 1,
         })
         setLayers([layers[0], storey])
-        setMetrics({ landArea, buildingArea: landArea*lotCoverage,
+        setMetrics({ landArea, buildingArea: landArea*(lotCoverage/100),
                     volume: landArea*lotCoverage*floorHeight*floorNumber,
                     buildingHeight: floorHeight*floorNumber })
       }
@@ -107,7 +108,7 @@ const Home = (): JSX.Element => {
             return;
         }
         const data = JSON.parse(result)
-        const { center, landArea, buildingArea, buildingHeight } = computeGeoMatrics(data.coordinates[0],floorHeight,floorNumber,lotCoverage)
+        const { center, landArea, buildingArea, buildingHeight, volume } = computeGeoMatrics(data.coordinates[0],floorHeight,floorNumber,lotCoverage)
         const { geometry: { coordinates: [longitude,latitude]}} = center
         let multiploygon = geoTransform(data,lotCoverage,[longitude,latitude])
         // create feature object
@@ -124,17 +125,18 @@ const Home = (): JSX.Element => {
     
       const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
+          const { name } = e.target.files[0]
+          let allowedExtension = /.geojson/;
+          if(!allowedExtension.exec(name)){
+            alert('Invalid File type uploaded. Only .geojson files supported')
+            return;
+          }
           fileReader = new FileReader()
           fileReader.onloadend = handleFileRead
           fileReader.readAsText(e.target.files[0]);
           setFileName(e.target.files[0].name)
         }
       };
-    
-    const updateViewState = (state: OnStateChangeParameters )  => {
-        const { viewState } = state
-        setViewState(viewState);
-    };
 
     return (
         <div>
@@ -155,10 +157,9 @@ const Home = (): JSX.Element => {
               </section>
             </div>
             <DeckGL
-              viewState={viewState}
+              initialViewState={viewState}
               layers={layers}
               controller={true}
-              onViewStateChange={updateViewState}
             >
                 <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" />
             </DeckGL> 
@@ -170,7 +171,7 @@ const Home = (): JSX.Element => {
                 <MetricDisplay value={buildingArea} unit='m2' label='Building Area' />
                 <MetricDisplay value={buildingArea} unit='m2' label='Building Floor Area' />
                 <MetricDisplay value={volume} unit='m3' label='Volume' />
-                <MetricDisplay value={buildingHeight} unit='m' label='Building Height' />
+                <MetricDisplay value={volume ? buildingHeight : 0} unit='m' label='Building Height' />
             </div>
           </div>  
         </div>
