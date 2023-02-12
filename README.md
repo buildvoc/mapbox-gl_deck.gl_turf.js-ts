@@ -14,4 +14,8 @@
 ### `URL`
 - https://luminous-begonia-781683.netlify.app/
 
+### `installation`
+- clone repo
+- run ####npm install
+
 

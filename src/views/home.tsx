@@ -98,7 +98,7 @@ const Home = (): JSX.Element => {
         })
         setLayers([layers[0], storey])
         setMetrics({ landArea, buildingArea: landArea*(lotCoverage/100),
-                    volume: landArea*lotCoverage*floorHeight*floorNumber,
+                    volume: landArea*(lotCoverage/100)*floorHeight*floorNumber,
                     buildingHeight: floorHeight*floorNumber })
       }
     

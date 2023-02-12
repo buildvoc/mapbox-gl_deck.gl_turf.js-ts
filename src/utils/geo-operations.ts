@@ -11,7 +11,7 @@ export const computeGeoMatrics = (coordinates: any, floorHeight: number, floorNu
     const landArea = round(area(areaPolygon))
     const buildingHeight = floorHeight*floorNumber
     const buildingArea = round(landArea*(lotCoverage/100))
-    const volume = round(buildingArea*buildingHeight)
+    const volume = round(landArea*(lotCoverage/100)*floorHeight*floorNumber)
     // calculate center of polygon which will be used for scaling and rotating the building layer
     const center = centerOfMass(areaPolygon)
 
