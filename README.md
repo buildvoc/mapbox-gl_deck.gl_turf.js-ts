@@ -9,7 +9,7 @@
 
 
 ### `NB`
-- This app uses my free tier mapbox token which will be removed from the repo after the assessment has been completed.
+- This app needs a mapbox access token hence you should have an operational mapbox account.
 
 ### `URL`
 - https://luminous-begonia-781683.netlify.app/

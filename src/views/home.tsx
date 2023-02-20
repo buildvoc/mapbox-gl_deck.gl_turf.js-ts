@@ -26,7 +26,7 @@ import './home.css'
 //@ts-ignore 
 // eslint-disable-next-line import/no-webpack-loader-syntax
 mapboxgl.workerClass = require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
-mapboxgl.accessToken = 'pk.eyJ1IjoiYnJpYW4yM21hcGJveCIsImEiOiJjbGR1Y3FudWIwNGtoM3FvNWF0ZjBtb2Z1In0.fsi9kFZgx1r5HR_tAxn9_g';
+mapboxgl.accessToken = '<INSERT MAPBOX ACCESS TOKEN HERE';
 
 const Home = (): JSX.Element => {
     const [inputs, setInputs] = useState<UserInputs>({ lotCoverage: 50, floorNumber: 10, floorHeight: 10 })
