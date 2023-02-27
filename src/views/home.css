@@ -47,6 +47,12 @@
     gap: 30px;
 } 
 
+.links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .statistiques {
     background-color: #f9f9f9;
     position: absolute;

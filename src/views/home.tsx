@@ -10,7 +10,6 @@ import Button from '@mui/material/Button';
 import UserInputs from "../models/user-inputs";
 import Metrics from "../models/metrics";
 import MapViewState from "../models/map-view-state";
-import OnStateChangeParameters from "../models/map-onmove-state";
 import FileContents from "../models/file";
 
 // Components
@@ -19,6 +18,10 @@ import MetricDisplay from "../components/metric-display";
 
 // utils
 import { computeGeoMatrics, geoTransform } from "../utils/geo-operations";
+
+import geneve from "../data/geneve";
+import lausanne from "../data/lausanne";
+import corseaux from "../data/corseaux";
 
 import './home.css'
 
@@ -138,6 +141,21 @@ const Home = (): JSX.Element => {
         }
       };
 
+    const fileDownload = () => {
+      let data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geneve));
+      let a = document.createElement('a');
+      a.href = 'data:' + data;
+      a.download = 'data.geojson';
+      a.innerHTML = 'download JSON';
+      var container = document.getElementById('dwnldbtn')!;
+      container.appendChild(a);
+    }
+
+    const genHrefAttribute = <T,>(city: T) => {
+      let data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(city));
+      return 'data:' + data;
+    }
+
     return (
         <div>
           <div className='app-wrapper'>
@@ -154,6 +172,14 @@ const Home = (): JSX.Element => {
                 <Slider disabled={landArea ? false : true} label='lotCoverage' inputs={inputs} updateInputs={updateInputs} symbol='%' />
                 <Slider disabled={landArea ? false : true} label='floorNumber' inputs={inputs} updateInputs={updateInputs} />
                 <Slider disabled={landArea ? false : true} label='floorHeight' inputs={inputs} updateInputs={updateInputs} />
+              </section>
+              <section>
+                <Typography variant="h6" gutterBottom>Download sample data</Typography>
+                <div className="links">
+                  <a href={genHrefAttribute(geneve)} download='geneve.geojson'>Geneve</a>
+                  <a href={genHrefAttribute(corseaux)} download='corseaux.geojson'>Corseaux</a>
+                  <a href={genHrefAttribute(lausanne)} download='lausanne.geojson'>Lausanne</a>
+                </div>
               </section>
             </div>
             <DeckGL
