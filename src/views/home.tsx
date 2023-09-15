@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactElement } from "react";
 import mapboxgl from 'mapbox-gl';
 import { DeckGL } from '@deck.gl/react/typed'
 import {GeoJsonLayer} from '@deck.gl/layers/typed'
@@ -29,9 +29,9 @@ import './home.css'
 //@ts-ignore 
 // eslint-disable-next-line import/no-webpack-loader-syntax
 mapboxgl.workerClass = require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
-mapboxgl.accessToken = '<INSERT MAPBOX ACCESS TOKEN HERE';
+mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN as string;
 
-const Home = (): JSX.Element => {
+const Home = (): ReactElement => {
     const [inputs, setInputs] = useState<UserInputs>({ lotCoverage: 50, floorNumber: 10, floorHeight: 10 })
     const [centerCoords, setCenterCoords] = useState<[number,number]>([0,0])
     const geojsonFileContents = React.useRef<FileContents>({ type: '', coordinates: [[]]})
