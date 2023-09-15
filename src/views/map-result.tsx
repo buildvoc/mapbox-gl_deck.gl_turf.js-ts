@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import { styled } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -8,10 +7,7 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import Link from '@mui/material/Link';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 
 import mapboxgl from 'mapbox-gl';
@@ -36,6 +32,8 @@ import { computeGeoMatrics, geoTransform } from "../utils/geo-operations";
 import geneve from "../data/geneve";
 import lausanne from "../data/lausanne";
 import corseaux from "../data/corseaux";
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { List } from "@mui/material";
 
 
 // prevent mapboxgl from being transpiled by Babel
@@ -43,19 +41,6 @@ import corseaux from "../data/corseaux";
 // eslint-disable-next-line import/no-webpack-loader-syntax
 mapboxgl.workerClass = require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN as string;
-
-function Copyright(props: any) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://building-height.co.uk/">
-        Building-Height.co.uk
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
 
 const drawerWidth: number = 300;
 
@@ -85,14 +70,16 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
-// TODO remove, this demo shouldn't need to reset the theme.
-const defaultTheme = createTheme();
+interface MapResultProps {
+  geojson: any;
+}
 
-export default function Dashboard() {
+export default function MapResult({ geojson }: MapResultProps) {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
+  
 
   const [inputs, setInputs] = useState<UserInputs>({ lotCoverage: 50, floorNumber: 10, floorHeight: 10 })
   const [centerCoords, setCenterCoords] = useState<[number,number]>([0,0])
@@ -167,13 +154,24 @@ export default function Dashboard() {
                   volume: landArea*(lotCoverage/100)*floorHeight*floorNumber,
                   buildingHeight: floorHeight*floorNumber })
     }
+
+    useEffect(() => {   
+      handleFileRead()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[geojson])
   
     const handleFileRead = () => {
-      const result = fileReader.result
-      if (typeof result !== 'string') {
-          return;
-      }
-      const data = JSON.parse(result)
+      // const result = fileReader?.result
+      // if (typeof result !== 'string') {
+      //     return;
+      // }
+      // const data = JSON.parse(result)
+
+      let result = JSON.stringify(corseaux) as any;
+      if (fileReader?.result) result = fileReader?.result;
+
+      const data = JSON.parse(result);
+
       const { center, landArea, buildingArea, buildingHeight, volume } = computeGeoMatrics(data.coordinates[0],floorHeight,floorNumber,lotCoverage)
       const { geometry: { coordinates: [longitude,latitude]}} = center
       let multiploygon = geoTransform(data,lotCoverage,[longitude,latitude])
@@ -224,10 +222,8 @@ export default function Dashboard() {
   const preventDefault = (event: React.SyntheticEvent) => event.preventDefault();
 
   return (
-    <ThemeProvider theme={defaultTheme}>
-      <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        
+    <>
+      <>
         <Drawer variant="permanent" open={open}>
           <Toolbar
             sx={{
@@ -238,11 +234,12 @@ export default function Dashboard() {
             }}
           >
             <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
+              {open ? <ChevronLeft />: <ChevronRight />}
             </IconButton>
           </Toolbar>
           <Divider />
-          {open && (
+          <List>
+            {open && (
             <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px'}}>
                 <div className="button">
                   { !geojsonFileContents.current.type ? <Typography gutterBottom>No file loaded</Typography> : null }
@@ -289,6 +286,7 @@ export default function Dashboard() {
                 </Box>
             </div>
             )}
+          </List>
         </Drawer>
         <Box
           component="main"
@@ -304,52 +302,16 @@ export default function Dashboard() {
         >
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
-              {/* Chart */}
-              <Grid item xs={12} md={8} lg={9}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: 240,
-                  }}
-                >
-                  {/* <Chart /> */}
-                  <DeckGL
-                    initialViewState={viewState}
-                    layers={layers}
-                    controller={true}
-                    >
-                    <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" />
-                  </DeckGL>
-                </Paper>
-              </Grid>
-              {/* Recent Deposits */}
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: 240,
-                  }}
-                >
-                  {/* <Deposits /> */}
-                  
-                </Paper>
-              </Grid>
-              {/* Recent Orders */}
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  {/* <Orders /> */}
-                </Paper>
-              </Grid>
-            </Grid>
-            <Copyright sx={{ pt: 4 }} />
+            <DeckGL
+              initialViewState={viewState}
+              layers={layers}
+              controller={true}
+            >
+              <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" />
+            </DeckGL>
           </Container>
         </Box>
-      </Box>
-    </ThemeProvider>
+      </>
+    </>
   );
 }
