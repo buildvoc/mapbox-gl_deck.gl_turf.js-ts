@@ -32,6 +32,7 @@ import { computeGeoMatrics, geoTransform } from "../utils/geo-operations";
 import geneve from "../data/geneve";
 import lausanne from "../data/lausanne";
 import corseaux from "../data/corseaux";
+import features from "../data/features";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { List } from "@mui/material";
 
@@ -71,10 +72,10 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 interface MapResultProps {
-  geojson: any;
+  layerSx: any;
 }
 
-export default function MapResult({ geojson }: MapResultProps) {
+export default function MapResult({ layerSx }: MapResultProps) {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -158,7 +159,7 @@ export default function MapResult({ geojson }: MapResultProps) {
     useEffect(() => {   
       handleFileRead()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[geojson])
+    },[layerSx])
   
     const handleFileRead = () => {
       // const result = fileReader?.result
@@ -167,21 +168,26 @@ export default function MapResult({ geojson }: MapResultProps) {
       // }
       // const data = JSON.parse(result)
 
-      let result = JSON.stringify(corseaux) as any;
-      if (fileReader?.result) result = fileReader?.result;
+      console.log(layerSx);
+      
 
-      const data = JSON.parse(result);
+      // let result = JSON.stringify(features) as any;
+      // if (fileReader?.result) result = fileReader?.result;
 
-      const { center, landArea, buildingArea, buildingHeight, volume } = computeGeoMatrics(data.coordinates[0],floorHeight,floorNumber,lotCoverage)
-      const { geometry: { coordinates: [longitude,latitude]}} = center
-      let multiploygon = geoTransform(data,lotCoverage,[longitude,latitude])
+      // const data = JSON.parse(result);
+
+      // const { center, landArea, buildingArea, buildingHeight, volume } = computeGeoMatrics(data.coordinates[0],floorHeight,floorNumber,lotCoverage)
+      // const { geometry: { coordinates: [longitude,latitude]}} = center
+      // let multiploygon = geoTransform(data,lotCoverage,[longitude,latitude])
       // create feature object
-      let building = JSON.stringify({type: "Feature",properties:{}, geometry: multiploygon })
-      createDefaultBuilding(data,building)
-      setViewState(prev => ({...prev, longitude, latitude, zoom: 18}))
-      geojsonFileContents.current = data
-      setCenterCoords([longitude,latitude])
-      setMetrics({ landArea, buildingArea, buildingHeight, volume })
+      // let building = JSON.stringify({type: "Feature",properties:{}, geometry: multiploygon })
+      // let building = JSON.stringify({"id":"000000b1-0556-4231-a52a-9b5b8b82dfbf","type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-3.9703075,55.7425473],[-3.9701862,55.7424916],[-3.9701342,55.7425277],[-3.9702899,55.7425992],[-3.9703201,55.7425783],[-3.9702857,55.7425625],[-3.9703075,55.7425473]]]},"properties":{"osid":"000000b1-0556-4231-a52a-9b5b8b82dfbf","toid":"osgb1000041024621","theme":"Buildings","changetype":"Modified Attributes","isobscured":false,"description":"Building","versiondate":"2022-09-18","geometry_area":59.20065,"height_source":"Ordnance Survey","physicallevel":"Surface Level","oslandusetiera":"Residential Accommodation","oslandusetierb":["Private Residence"],"geometry_source":"Ordnance Survey","oslandcovertiera":"Constructed","oslandcovertierb":["Building"],"oslanduse_source":"Ordnance Survey","height_updatedate":"2022-08-24","description_source":"Ordnance Survey","oslandcover_source":"Ordnance Survey","associatedstructure":null,"geometry_updatedate":"2006-08-30","height_evidencedate":"2022-06-20","capturespecification":"Urban","oslanduse_updatedate":"2006-08-30","absoluteheightmaximum":115.16,"absoluteheightminimum":105,"geometry_evidencedate":"2006-08-30","heightconfidencelevel":"Not Assessed","relativeheightmaximum":10.16,"absoluteheightroofbase":110.85,"description_updatedate":"2006-08-30","oslandcover_updatedate":"2006-08-30","oslanduse_evidencedate":"2006-08-30","relativeheightroofbase":5.85,"versionavailabletodate":null,"firstdigitalcapturedate":"1991-09-18","description_evidencedate":"2006-08-30","oslandcover_evidencedate":"2006-08-30","versionavailablefromdate":"2022-09-19T00:00:00Z"}})
+      const {geojson, rel_h_max, os_topo_toid, rel_h2, tile_ref, bha_conf, abs_min, abs_h_max, abs_h2 } = layerSx;
+      createDefaultBuilding(geojson,JSON.stringify(geojson))
+      setViewState(prev => ({...prev, longitude: geojson.features[0].geometry.coordinates[0], latitude: geojson.features[0].geometry.coordinates[1], zoom: 18}))
+      // geojsonFileContents.current = data
+      setCenterCoords([geojson.features[0].geometry.coordinates[0],geojson.features[0].geometry.coordinates[1]])
+      setMetrics({ landArea, buildingArea, buildingHeight: parseFloat(rel_h_max), volume })
       if (!(lotCoverage === 50 && floorHeight === 10 && floorNumber === 10)) {
         setInputs({ lotCoverage: 50, floorNumber: 10, floorHeight: 10 })
       }
@@ -241,7 +247,7 @@ export default function MapResult({ geojson }: MapResultProps) {
           <List>
             {open && (
             <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px'}}>
-                <div className="button">
+                {/* <div className="button">
                   { !geojsonFileContents.current.type ? <Typography gutterBottom>No file loaded</Typography> : null }
                   <Button variant="contained" component="label">
                     LOAD GEOJSON
@@ -253,7 +259,7 @@ export default function MapResult({ geojson }: MapResultProps) {
                   <Slider disabled={landArea ? false : true} label='lotCoverage' inputs={inputs} updateInputs={updateInputs} symbol='%' />
                   <Slider disabled={landArea ? false : true} label='floorNumber' inputs={inputs} updateInputs={updateInputs} />
                   <Slider disabled={landArea ? false : true} label='floorHeight' inputs={inputs} updateInputs={updateInputs} />
-                </section>
+                </section> */}
                 <section>
                   <Typography variant="h6" gutterBottom>Download sample data</Typography>
                   <Box
@@ -282,7 +288,7 @@ export default function MapResult({ geojson }: MapResultProps) {
                     <MetricDisplay value={buildingArea} unit='m2' label='Building Area' />
                     <MetricDisplay value={buildingArea} unit='m2' label='Building Floor Area' />
                     <MetricDisplay value={volume} unit='m3' label='Volume' />
-                    <MetricDisplay value={volume ? buildingHeight : 0} unit='m' label='Building Height' />
+                    <MetricDisplay value={buildingHeight} unit='m' label='Building Height' />
                 </Box>
             </div>
             )}
