@@ -291,7 +291,7 @@ export default function Main() {
             Identify building height from a photo
           </Typography>
           <Typography paragraph variant={'caption'} id="modal-modal-description" sx={{ mt: 2 }}>
-            Building-Hight is a system that can determine the attributes of historical buildings in England. The building part can be defined just by uploading a photo.
+            Building-Height is a system that can determine the attributes of historical buildings in England. The building part can be defined just by uploading a photo.
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={12}>
