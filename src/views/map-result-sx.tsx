@@ -72,10 +72,10 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 interface MapResultProps {
-  geo: any;
+  layerSx: any;
 }
 
-export default function MapResult({ geo }: MapResultProps) {
+export default function MapResult({ layerSx }: MapResultProps) {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -101,15 +101,15 @@ export default function MapResult({ geo }: MapResultProps) {
   let fileReader: FileReader
 
   // updates user inputs state on every user interaction
-  // const updateInputs = (label: string,value: number) => {
-  //     setInputs({...inputs,[label]: value})
-  // }
+  const updateInputs = (label: string,value: number) => {
+      setInputs({...inputs,[label]: value})
+  }
 
-  // const getElevation = () => floorHeight*floorNumber
+  const getElevation = () => floorHeight*floorNumber
 
   // called once on new file upload
   // creates ground and building layers based on default inputs
-  const createDefaultBuilding = (land: string,building: string, buildingHeight: number): void => {
+  const createDefaultBuilding = (land: string,building: string): void => {
     
         const ground = new GeoJsonLayer({  id: 'geojson-ground-layer',
                                                 data: land,
@@ -124,70 +124,76 @@ export default function MapResult({ geo }: MapResultProps) {
                                             wireframe: true,
                                             getFillColor: [249,180,45,255],
                                             getLineColor: [0,0,0,255],
-                                            getElevation: buildingHeight,
+                                            getElevation,
                                             opacity: 1 })
         setLayers([ground, storey])    
     }
   
-    // useEffect(() => {   
-    //   if (layers[0]) {
-    //    generateBuldingLayer()
-    //   }
-    // // eslint-disable-next-line react-hooks/exhaustive-deps
-    // },[inputs])
+    useEffect(() => {   
+      if (layers[0]) {
+       generateBuldingLayer()
+      }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[inputs])
   
-    // const generateBuldingLayer = () => {
-    //   // called every time user inputs change
-    //   const data = { type: 'MultiPolygon', coordinates: geojsonFileContents.current.coordinates }
-    //   let building = JSON.stringify(geoTransform(data, lotCoverage, centerCoords))
-    //   const storey = new GeoJsonLayer({
-    //     id: 'geojson-storey-building',
-    //     data: JSON.parse(building),
-    //     extruded: true,
-    //     wireframe: true,
-    //     getFillColor: [249,180,45,255],
-    //     getLineColor: [0,0,0,255],
-    //     getElevation,
-    //     opacity: 1,
-    //   })
-    //   setLayers([layers[0], storey])
-    //   setMetrics({ landArea, buildingArea: landArea*(lotCoverage/100),
-    //               volume: landArea*(lotCoverage/100)*floorHeight*floorNumber,
-    //               buildingHeight: floorHeight*floorNumber })
-    // }
+    const generateBuldingLayer = () => {
+      // called every time user inputs change
+      const data = { type: 'MultiPolygon', coordinates: geojsonFileContents.current.coordinates }
+      let building = JSON.stringify(geoTransform(data, lotCoverage, centerCoords))
+      const storey = new GeoJsonLayer({
+        id: 'geojson-storey-building',
+        data: JSON.parse(building),
+        extruded: true,
+        wireframe: true,
+        getFillColor: [249,180,45,255],
+        getLineColor: [0,0,0,255],
+        getElevation,
+        opacity: 1,
+      })
+      setLayers([layers[0], storey])
+      setMetrics({ landArea, buildingArea: landArea*(lotCoverage/100),
+                  volume: landArea*(lotCoverage/100)*floorHeight*floorNumber,
+                  buildingHeight: floorHeight*floorNumber })
+    }
 
     useEffect(() => {   
-      handleFileRead(false)
+      handleFileRead()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[geo])
+    },[layerSx])
   
-    const handleFileRead = (isFileUpload: boolean) => {
+    const handleFileRead = () => {
       // const result = fileReader?.result
       // if (typeof result !== 'string') {
       //     return;
       // }
       // const data = JSON.parse(result)
 
-      let result = JSON.stringify(glasgow) as any;
-      if (fileReader?.result) result = fileReader?.result;
+      console.log(layerSx);
+      
 
-      let geojson = JSON.parse(result);
-      if (!isFileUpload) geojson = geo.geojson;
+      // let result = JSON.stringify(features) as any;
+      // if (fileReader?.result) result = fileReader?.result;
 
-      console.log(geojson);
+      // const data = JSON.parse(result);
 
-      const { center, landArea, buildingArea, buildingHeight, volume } = computeGeoMatrics(geojson.features[0].geometry.coordinates,floorHeight,floorNumber,lotCoverage)
-      const { geometry: { coordinates: [longitude,latitude]}} = center
-      createDefaultBuilding(geojson, JSON.stringify(geojson), geojson.features[0].properties.RelHMax)
-      setViewState(prev => ({...prev, longitude, latitude, zoom: 18}))
-      geojsonFileContents.current = geojson
-      setCenterCoords([longitude,latitude])
-      setMetrics({ landArea, buildingArea, buildingHeight: geojson.features[0].properties.RelHMax, volume })
+      // const { center, landArea, buildingArea, buildingHeight, volume } = computeGeoMatrics(data.coordinates[0],floorHeight,floorNumber,lotCoverage)
+      // const { geometry: { coordinates: [longitude,latitude]}} = center
+      // let multiploygon = geoTransform(data,lotCoverage,[longitude,latitude])
+      // create feature object
+      // let building = JSON.stringify({type: "Feature",properties:{}, geometry: multiploygon })
+      // let building = JSON.stringify({"id":"000000b1-0556-4231-a52a-9b5b8b82dfbf","type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-3.9703075,55.7425473],[-3.9701862,55.7424916],[-3.9701342,55.7425277],[-3.9702899,55.7425992],[-3.9703201,55.7425783],[-3.9702857,55.7425625],[-3.9703075,55.7425473]]]},"properties":{"osid":"000000b1-0556-4231-a52a-9b5b8b82dfbf","toid":"osgb1000041024621","theme":"Buildings","changetype":"Modified Attributes","isobscured":false,"description":"Building","versiondate":"2022-09-18","geometry_area":59.20065,"height_source":"Ordnance Survey","physicallevel":"Surface Level","oslandusetiera":"Residential Accommodation","oslandusetierb":["Private Residence"],"geometry_source":"Ordnance Survey","oslandcovertiera":"Constructed","oslandcovertierb":["Building"],"oslanduse_source":"Ordnance Survey","height_updatedate":"2022-08-24","description_source":"Ordnance Survey","oslandcover_source":"Ordnance Survey","associatedstructure":null,"geometry_updatedate":"2006-08-30","height_evidencedate":"2022-06-20","capturespecification":"Urban","oslanduse_updatedate":"2006-08-30","absoluteheightmaximum":115.16,"absoluteheightminimum":105,"geometry_evidencedate":"2006-08-30","heightconfidencelevel":"Not Assessed","relativeheightmaximum":10.16,"absoluteheightroofbase":110.85,"description_updatedate":"2006-08-30","oslandcover_updatedate":"2006-08-30","oslanduse_evidencedate":"2006-08-30","relativeheightroofbase":5.85,"versionavailabletodate":null,"firstdigitalcapturedate":"1991-09-18","description_evidencedate":"2006-08-30","oslandcover_evidencedate":"2006-08-30","versionavailablefromdate":"2022-09-19T00:00:00Z"}})
+      const {geojson, rel_h_max, os_topo_toid, rel_h2, tile_ref, bha_conf, abs_min, abs_h_max, abs_h2 } = layerSx;
+      createDefaultBuilding(geojson,JSON.stringify(geojson))
+      setViewState(prev => ({...prev, longitude: geojson.features[0].geometry.coordinates[0], latitude: geojson.features[0].geometry.coordinates[1], zoom: 18}))
+      // geojsonFileContents.current = data
+      setCenterCoords([geojson.features[0].geometry.coordinates[0],geojson.features[0].geometry.coordinates[1]])
+      setMetrics({ landArea, buildingArea, buildingHeight: parseFloat(rel_h_max), volume })
       if (!(lotCoverage === 50 && floorHeight === 10 && floorNumber === 10)) {
         setInputs({ lotCoverage: 50, floorNumber: 10, floorHeight: 10 })
       }
     }
   
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
         const { name } = e.target.files[0]
@@ -197,11 +203,22 @@ export default function MapResult({ geo }: MapResultProps) {
           return;
         }
         fileReader = new FileReader()
-        fileReader.onloadend = () => handleFileRead(true)
+        fileReader.onloadend = handleFileRead
         fileReader.readAsText(e.target.files[0]);
         setFileName(e.target.files[0].name)
       }
     };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const fileDownload = () => {
+    let data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geneve));
+    let a = document.createElement('a');
+    a.href = 'data:' + data;
+    a.download = 'data.geojson';
+    a.innerHTML = 'download JSON';
+    var container = document.getElementById('dwnldbtn')!;
+    container.appendChild(a);
+  }
 
   const genHrefAttribute = <T,>(city: T) => {
     let data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(city));
@@ -229,7 +246,7 @@ export default function MapResult({ geo }: MapResultProps) {
           <List dense={true} >
             {open && (
             <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px'}}>
-                <div className="button">
+                {/* <div className="button">
                   { !geojsonFileContents.current.type ? <Typography gutterBottom>No file loaded</Typography> : null }
                   <Button variant="contained" component="label">
                     LOAD GEOJSON
@@ -237,12 +254,12 @@ export default function MapResult({ geo }: MapResultProps) {
                   </Button>
                   <Typography >{fileName}</Typography>
                 </div>
-                {/* <section>
+                <section>
                   <Slider disabled={landArea ? false : true} label='lotCoverage' inputs={inputs} updateInputs={updateInputs} symbol='%' />
                   <Slider disabled={landArea ? false : true} label='floorNumber' inputs={inputs} updateInputs={updateInputs} />
                   <Slider disabled={landArea ? false : true} label='floorHeight' inputs={inputs} updateInputs={updateInputs} />
                 </section> */}
-                <section style={{marginTop:'16px'}}>
+                <section>
                   <Typography variant="h6" gutterBottom>Download sample data</Typography>
                   <Box
                     sx={{
@@ -255,9 +272,9 @@ export default function MapResult({ geo }: MapResultProps) {
                         },
                     }}
                     >
-                    <Link href={genHrefAttribute(glasgow)} download='glasgow.geojson'>Glasgow</Link>
-                    {/* <Link href={genHrefAttribute(corseaux)} download='corseaux.geojson'>Corseaux</Link>
-                    <Link href={genHrefAttribute(lausanne)} download='lausanne.geojson'>Lausanne</Link> */}
+                    <Link href={genHrefAttribute(geneve)} download='geneve.geojson'>Geneve</Link>
+                    <Link href={genHrefAttribute(corseaux)} download='corseaux.geojson'>Corseaux</Link>
+                    <Link href={genHrefAttribute(lausanne)} download='lausanne.geojson'>Lausanne</Link>
                   </Box>
                 </section>
 

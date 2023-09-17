@@ -124,7 +124,7 @@ export default function Main() {
   )
 
   const [errMsg, setErrMsg] = useState<any>();
-  const [layerSx, setLayerSx] = useState<any>();
+  const [geo, setGeo] = useState<any>();
   const getPolygon = async (lat: string, lon: string) => {
     try {
         setLoading(true);
@@ -132,15 +132,11 @@ export default function Main() {
         let lng = parseFloat(lon);
         if (lng > 0) lng = -Math.abs(parseFloat(lon));
 
-        const response = await fetch("https://api.buildingshistory.co.uk/api/v1/layer-sx/nearest?latitude="+parseFloat(lat)+"&longitude="+lng);
+        const response = await fetch("https://api.buildingshistory.co.uk/api/v1/geo/nearest?latitude="+parseFloat(lat)+"&longitude="+lng+"&radius=50");
         const data = await response.json();
 
-        if (data.data.layer_sx.length > 0 && data.data.layer_sx[0].geojson) {
-            // loadPolygon(data.data.layer_sx[0].geojson, parseFloat(lat), lng);
-            // $("#RelHMax").text(data.data.layer_sx[0].rel_h_max + " m");
-            // console.log(data.data.layer_sx[0].geojson);
-            
-            setLayerSx(data.data.layer_sx[0])
+        if (data.data.phil_geos.length > 0 && data.data.phil_geos[0].geojson) {
+            setGeo(data.data.phil_geos[0])
             setValue(1)
 
         }else{
@@ -249,14 +245,14 @@ export default function Main() {
           </Container>
       </Box>
       </>
-      ): <MapResult layerSx={layerSx} />}
+      ): <MapResult geo={geo} />}
 
       <Paper sx={{ position: 'fixed',  bottom: 0, left:0, right: 0 }} elevation={3}>
             <BottomNavigation
             showLabels
             value={value}
             onChange={(event, newValue) => {
-                if (layerSx) setValue(newValue);
+                if (geo) setValue(newValue);
                 else {
                   alert('Please upload a photo');
                   setValue(0);
