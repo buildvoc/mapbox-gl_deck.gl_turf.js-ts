@@ -4,10 +4,10 @@ import CssBaseline from '@mui/material/CssBaseline';
 import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import Paper from '@mui/material/Paper';
-import { CameraAlt, Close, DocumentScanner, PinDrop } from '@mui/icons-material';
+import { CameraAlt, Close, DocumentScanner, Info, PinDrop } from '@mui/icons-material';
 
 import ExifReader from 'exifreader';
-import { Container, Divider, Grid, IconButton, List, ListItem, ListItemText, Stack, Toolbar, Drawer, Backdrop, CircularProgress, Snackbar, Alert } from "@mui/material";
+import { Container, Divider, Grid, IconButton, List, ListItem, ListItemText, Stack, Toolbar, Drawer, Backdrop, CircularProgress, Snackbar, Alert, AppBar, Modal, Typography } from "@mui/material";
 
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
@@ -162,10 +162,23 @@ export default function Main() {
   }
 
   
+  const [infoOpen, setInfoOpen] = React.useState(false);
+  const toggleInfo = () => setInfoOpen(!infoOpen);
 
   return (
     <Box sx={{ display: 'flex', height: '100vh'}} ref={ref}>
       <CssBaseline />
+      <AppBar elevation={0} color="transparent" position="absolute">
+        <Toolbar 
+          sx={{
+            direction: 'row',
+            justifyContent: 'flex-end',
+            alignItems: 'center'
+          }}
+          >
+            <IconButton onClick={toggleInfo} color="primary" edge="end" aria-label="Info"><Info /></IconButton>
+        </Toolbar>
+      </AppBar>
 
       {value === 0 ? (
       <>
@@ -188,7 +201,7 @@ export default function Main() {
             </IconButton>
           </Toolbar>
           <Divider />
-          <List sx={{ width: 300, maxWidth: 300, bgcolor: 'background.paper' }}>
+          <List dense={true} sx={{ width: 300, maxWidth: 300, bgcolor: 'background.paper' }}>
             {tagLists && tagLists}
           </List>
       </Drawer>
@@ -266,6 +279,61 @@ export default function Main() {
         >
         <CircularProgress color="inherit" />
       </Backdrop>
+
+      <Modal
+        open={infoOpen}
+        onClose={toggleInfo}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={infoStyle}>
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            Identify building height from a photo
+          </Typography>
+          <Typography paragraph variant={'caption'} id="modal-modal-description" sx={{ mt: 2 }}>
+            Building-Hight is a system that can determine the attributes of historical buildings in England. The building part can be defined just by uploading a photo.
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={12}>
+                <List dense={true}>
+                    <ListItem sx={{paddingLeft:0}}>
+                      <ListItemText
+                        primary="1. Upload an image"
+                        secondary={'You can upload or capture from your camera with active GPS'}
+                      />
+                    </ListItem>
+                    <ListItem sx={{paddingLeft:0}}>
+                      <ListItemText
+                        primary="2. Image metadata will be displayed"
+                        secondary={'Extracted metadata from the image you uploaded will be displayed'}
+                      />
+                    </ListItem>
+                    <ListItem sx={{paddingLeft:0}}>
+                      <ListItemText
+                        primary="3. Building height will be identified"
+                        secondary={'The building height, map location of the building and its attributes will be displayed'}
+                      />
+                    </ListItem>
+                </List>
+            </Grid>
+          </Grid>
+          <Button onClick={toggleInfo} sx={{mt: 4, float: 'right'}} variant="outlined">Close</Button>
+        </Box>
+      </Modal>
+
     </Box>
   );
 }
+
+const infoStyle = {
+  position: 'absolute' as 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #f5f5f5',
+  overflow: 'auto',
+  boxShadow: 24,
+  p: 4,
+};

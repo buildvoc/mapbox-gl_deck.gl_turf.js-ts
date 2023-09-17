@@ -193,6 +193,7 @@ export default function MapResult({ layerSx }: MapResultProps) {
       }
     }
   
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
         const { name } = e.target.files[0]
@@ -223,9 +224,6 @@ export default function MapResult({ layerSx }: MapResultProps) {
     let data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(city));
     return 'data:' + data;
   }
-  
-
-  const preventDefault = (event: React.SyntheticEvent) => event.preventDefault();
 
   return (
     <>
@@ -239,12 +237,13 @@ export default function MapResult({ layerSx }: MapResultProps) {
               px: [1],
             }}
           >
+            {open && 'Building attributes'}
             <IconButton onClick={toggleDrawer}>
               {open ? <ChevronLeft />: <ChevronRight />}
             </IconButton>
           </Toolbar>
           <Divider />
-          <List>
+          <List dense={true} >
             {open && (
             <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px'}}>
                 {/* <div className="button">
@@ -272,7 +271,6 @@ export default function MapResult({ layerSx }: MapResultProps) {
                         ml: 2,
                         },
                     }}
-                    onClick={preventDefault}
                     >
                     <Link href={genHrefAttribute(geneve)} download='geneve.geojson'>Geneve</Link>
                     <Link href={genHrefAttribute(corseaux)} download='corseaux.geojson'>Corseaux</Link>
