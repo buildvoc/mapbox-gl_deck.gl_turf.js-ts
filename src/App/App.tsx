@@ -6,7 +6,7 @@ import '@fontsource/roboto/700.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './App.css';
 
-import Main from '../views/main';
+import { Main } from '../views';
 
 function App() {
   return (
