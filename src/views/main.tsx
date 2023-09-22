@@ -21,6 +21,8 @@ export default function Main() {
   const [selectedImg, setSelectedImg] = useState<string|null|undefined>(undefined);
   const [previewImg, setPreviewImg] = useState<string|null|undefined>(undefined);
 
+  const api_url = "https://api.buildingshistory.co.uk";
+
   useEffect(() => {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
   }, [value]);
@@ -132,7 +134,7 @@ export default function Main() {
         let lng = parseFloat(lon);
         if (lng > 0) lng = -Math.abs(parseFloat(lon));
 
-        const response = await fetch(process.env.REACT_APP_API_URL+"/api/v1/building-part/nearest?latitude="+parseFloat(lat)+"&longitude="+lng);
+        const response = await fetch(api_url+"/api/v1/building-part/nearest?latitude="+parseFloat(lat)+"&longitude="+lng);
         const data = await response.json();
 
         if (data.data.building_part.length > 0 && data.data.building_part[0].geojson) {
