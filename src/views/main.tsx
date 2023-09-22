@@ -12,7 +12,7 @@ import { Container, Divider, Grid, IconButton, List, ListItem, ListItemText, Sta
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import MapResult from "./map-result";
+import MapResultBP from "./map-result-bp";
 
 export default function Main() {
   const [value, setValue] = React.useState(0);
@@ -132,11 +132,11 @@ export default function Main() {
         let lng = parseFloat(lon);
         if (lng > 0) lng = -Math.abs(parseFloat(lon));
 
-        const response = await fetch("https://api.buildingshistory.co.uk/api/v1/geo/nearest?latitude="+parseFloat(lat)+"&longitude="+lng+"&radius=50");
+        const response = await fetch(process.env.REACT_APP_API_URL+"/api/v1/building-part/nearest?latitude="+parseFloat(lat)+"&longitude="+lng);
         const data = await response.json();
 
-        if (data.data.phil_geos.length > 0 && data.data.phil_geos[0].geojson) {
-            setGeo(data.data.phil_geos[0])
+        if (data.data.building_part.length > 0 && data.data.building_part[0].geojson) {
+            setGeo(data.data.building_part[0])
             setValue(1)
 
         }else{
@@ -245,7 +245,7 @@ export default function Main() {
           </Container>
       </Box>
       </>
-      ): <MapResult geo={geo} />}
+      ): <MapResultBP geo={geo} />}
 
       <Paper sx={{ position: 'fixed',  bottom: 0, left:0, right: 0 }} elevation={3}>
             <BottomNavigation
