@@ -27,7 +27,7 @@ import MetricDisplay from "../components/metric-display";
 // utils
 import { computeGeoMatrics } from "../utils/geo-operations";
 
-import farnhan from "../data/farnhan";
+import farnham from "../data/farnham";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { List } from "@mui/material";
 
@@ -123,7 +123,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
   
     const handleFileRead = (isFileUpload: boolean) => {
 
-      let result = JSON.stringify(farnhan) as any;
+      let result = JSON.stringify(farnham) as any;
       if (fileReader?.result) result = fileReader?.result;
 
       let geojson = JSON.parse(result);
@@ -206,7 +206,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
                         },
                     }}
                     >
-                    <Link href={genHrefAttribute(farnhan)} download='farnhan.geojson'>Farnhan</Link>
+                    <Link href={genHrefAttribute(farnham)} download='farnham.geojson'>Farnham</Link>
                   </Box>
                 </section>
 
