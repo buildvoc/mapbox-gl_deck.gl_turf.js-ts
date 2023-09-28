@@ -11,8 +11,10 @@ import Link from '@mui/material/Link';
 
 
 import mapboxgl from 'mapbox-gl';
+import { Layer } from '@deck.gl/core/typed'
 import { DeckGL } from '@deck.gl/react/typed'
 import {GeoJsonLayer} from '@deck.gl/layers/typed'
+import {ScenegraphLayer} from '@deck.gl/mesh-layers/typed';
 import { Map } from 'react-map-gl' 
 import Button from '@mui/material/Button';
 
@@ -80,7 +82,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
   const [inputs, setInputs] = useState<UserInputs>({ lotCoverage: 50, floorNumber: 10, floorHeight: 10 })
   const [centerCoords, setCenterCoords] = useState<[number,number]>([0,0])
   const geojsonFileContents = React.useRef<FileContents>({ type: '', coordinates: [[]]})
-  const [layers, setLayers]  = useState<GeoJsonLayer[]>([])
+  const [layers, setLayers]  = useState<Layer[]>([])
   const [fileName, setFileName] = useState<string>('')
   const [viewState, setViewState] = useState<MapViewState>({  latitude: 46.203589,
                                                               longitude: 6.136900,
@@ -95,7 +97,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
   const { landArea, buildingArea, volume, buildingHeight } = metrics
   let fileReader: FileReader
 
-  const createDefaultBuilding = (land: string,building: string, buildingHeight: number): void => {
+  const createDefaultBuilding = (land: string,building: string, buildingHeight: number, cameraGPSData: any): void => {
     
         const ground = new GeoJsonLayer({  id: 'geojson-ground-layer',
                                                 data: land,
@@ -112,7 +114,18 @@ export default function MapResultBP({ geo }: MapResultProps) {
                                             getLineColor: [0,0,0,255],
                                             getElevation: buildingHeight,
                                             opacity: 1 })
-        setLayers([ground, storey])    
+
+        const url = './cam.gltf';
+        console.log(cameraGPSData)
+        const exif3dCameraLayer = new ScenegraphLayer({   id: 'exif3d-camera-layer',
+                                            data: cameraGPSData,
+                                            scenegraph: url,
+                                            getPosition: d => d.coordinates,
+                                            getColor: d => [203, 24, 226],
+                                            getOrientation: d => [0, - d.bearing, 90],
+                                            opacity: 1 
+                                          })
+        setLayers([ground, storey, exif3dCameraLayer])    
     }
   
 
@@ -134,7 +147,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
       const { center, landArea, buildingArea, buildingHeight, volume } = computeGeoMatrics(geojson.features[0].geometry.coordinates,floorHeight,floorNumber,lotCoverage)
       const { geometry: { coordinates: [longitude,latitude]}} = center
 
-      createDefaultBuilding(geojson, JSON.stringify(geojson), parseFloat(geojson.features[0].properties.relativeheightmaximum))
+      createDefaultBuilding(geojson, JSON.stringify(geojson), parseFloat(geojson.features[0].properties.relativeheightmaximum), geo.cameraGPSData);
       setViewState(prev => ({...prev, longitude, latitude, zoom: 18}))
       geojsonFileContents.current = geojson
       setCenterCoords([longitude,latitude])
