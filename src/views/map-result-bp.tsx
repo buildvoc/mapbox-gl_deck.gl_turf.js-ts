@@ -13,7 +13,7 @@ import Link from '@mui/material/Link';
 import mapboxgl from 'mapbox-gl';
 import { Layer } from '@deck.gl/core/typed'
 import { DeckGL } from '@deck.gl/react/typed'
-import {GeoJsonLayer} from '@deck.gl/layers/typed'
+import {GeoJsonLayer, IconLayer} from '@deck.gl/layers/typed'
 import {ScenegraphLayer} from '@deck.gl/mesh-layers/typed';
 import { Map } from 'react-map-gl' 
 import Button from '@mui/material/Button';
@@ -41,6 +41,81 @@ mapboxgl.workerClass = require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worke
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN as string;
 
 const drawerWidth: number = 300;
+
+function onHover(info: any) {
+  const { x, y, object } = info;
+  const tooltipElement = document.getElementById('custom-tooltip');
+  // const cardElement = document.getElementById('custom-card');
+
+  // this.map.getCanvas().style.cursor = 'pointer';
+
+    
+  // const coordinates = info.coordinate;
+  // if (coordinates) {
+  //   const lngLat = {
+  //     lng: coordinates[0],
+  //     lat: coordinates[1]
+  //   };
+  //   const elevation = Math.floor( 
+  //     // Do not use terrain exaggeration to get actual meter values
+  //     this.map.queryTerrainElevation(lngLat, { exaggerated: false })
+  //   );
+  // }
+
+  if (object) {
+    // <img src="/galleries/${object.URL}" alt="Click to view full image">
+    // console.log(object);
+      const tooltipContent = `
+      <br>
+      <b>Altitude:</b> ${object.altitude.toFixed(2)}m
+      <br>
+      <b>Heading:</b> ${object.bearing.toFixed(2)}°
+      `;
+    const coordinates = info.coordinate;
+      while (Math.abs(info.viewport.longitude - coordinates[0]) > 180) {
+          coordinates[0] += info.viewport.longitude > coordinates[0] ? 360 : -360;
+      };
+      
+      tooltipElement!.innerHTML = tooltipContent;
+      // cardElement!.style.display = 'none'
+      tooltipElement!.style.display = 'block';
+      tooltipElement!.style.left = x + 'px';
+      tooltipElement!.style.top = y + 'px';
+      tooltipElement!.style.color = "black";
+      tooltipElement!.style.zIndex = "999";
+      
+  } else {
+      // this.map.getCanvas().style.cursor = '';
+      tooltipElement!.style.display = 'none';
+  }
+}
+
+function onClick(info: any) {
+  const { x, y, object } = info;
+  // const mapCanvas = this.map.getCanvas();
+  const cardElement = document.getElementById('custom-card');
+  const tooltipElement = document.getElementById('custom-tooltip');
+
+  // mapCanvas.style.cursor = 'pointer';
+
+
+
+  const coordinates = info.coordinate;
+
+  while (Math.abs(info.viewport.longitude - coordinates[0]) > 180) {
+    coordinates[0] += info.viewport.longitude > coordinates[0] ? 360 : -360;
+  }
+
+  // cardElement.innerHTML = object.popup_html;
+  // cardElement.style.color = '#000';
+  // cardElement.style.fontSize = '12px';
+  // cardElement.style.zIndex = 999;
+  
+  // cardElement.style.display = 'block';
+  tooltipElement!.style.display = 'none'
+  // cardElement.style.left = x + 'px';
+  // cardElement.style.top = y + 'px';
+}
 
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
   ({ theme, open }) => ({
@@ -125,7 +200,29 @@ export default function MapResultBP({ geo }: MapResultProps) {
                                             getOrientation: d => [0, - d.bearing, 90],
                                             opacity: 1 
                                           })
-        setLayers([ground, storey, exif3dCameraLayer])    
+
+        const deckglMarkerLayer = new IconLayer({   id: 'exif-icon-kayer',
+                                            data: cameraGPSData,
+                                            getIcon: (d) => 'marker',
+                                            iconAtlas: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
+                                            iconMapping: {
+                                                marker: {x: 0, y: 0, width: 128, height: 128, mask: true}
+                                            },
+                                            getPosition: d => d.coordinates,
+                                            getColor: d => [Math.sqrt(d.exits), 140, 0],
+                                            getSize: d => 5,
+                                            // updateTriggers: {
+                                            //   // This tells deck.gl to recalculate radius when `currentYear` changes
+                                            //   getPosition: [imgInfoArray]
+                                            // },
+                                            // getAngle: (d) => - d.bearing, // negative of bearing as deck.gl uses counter clockwise rotations.
+                                            sizeScale: 8,
+                                            billboard: true,
+                                            pickable: true,
+                                            onHover: onHover,
+                                            onClick: onClick,
+                                          })
+        setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer])    
     }
   
 
@@ -251,6 +348,20 @@ export default function MapResultBP({ geo }: MapResultProps) {
         >
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <div className="custom-tooltip" id="custom-tooltip" style={
+            {
+              position: "absolute",
+              height: "max-content",
+              width: "max-content",
+              // pointer-events: none,
+              background: "white",
+              color: "white",
+              padding: "5px",
+              borderRadius: "5px",
+              // display: "none",
+          }
+          } ></div>
+
             <DeckGL
               initialViewState={viewState}
               layers={layers}

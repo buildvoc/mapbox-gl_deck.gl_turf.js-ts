@@ -141,10 +141,11 @@ export default function Main() {
         if (data.data.building_part.length > 0 && data.data.building_part[0].geojson) {
             setGeo( {
               geojson: data.data.building_part[0].geojson,
-              cameraGPSData: {
+              cameraGPSData: [{
                 coordinates: [lng, parseFloat(lat), parseFloat(camAltitude)],
                 bearing: parseFloat(camHeight),
-              }
+                altitude: parseFloat(camAltitude)
+              }]
             });
             setValue(1)
 
