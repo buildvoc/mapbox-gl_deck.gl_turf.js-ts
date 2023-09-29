@@ -201,28 +201,28 @@ export default function MapResultBP({ geo }: MapResultProps) {
                                             opacity: 1 
                                           })
 
-        const deckglMarkerLayer = new IconLayer({   id: 'exif-icon-kayer',
-                                            data: cameraGPSData,
-                                            getIcon: (d) => 'marker',
-                                            iconAtlas: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
-                                            iconMapping: {
-                                                marker: {x: 0, y: 0, width: 128, height: 128, mask: true}
-                                            },
-                                            getPosition: d => d.coordinates,
-                                            getColor: d => [Math.sqrt(d.exits), 140, 0],
-                                            getSize: d => 5,
-                                            // updateTriggers: {
-                                            //   // This tells deck.gl to recalculate radius when `currentYear` changes
-                                            //   getPosition: [imgInfoArray]
-                                            // },
-                                            // getAngle: (d) => - d.bearing, // negative of bearing as deck.gl uses counter clockwise rotations.
-                                            sizeScale: 8,
-                                            billboard: true,
-                                            pickable: true,
-                                            onHover: onHover,
-                                            onClick: onClick,
-                                          })
-        setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer])    
+        // const deckglMarkerLayer = new IconLayer({   id: 'exif-icon-kayer',
+        //                                     data: cameraGPSData,
+        //                                     getIcon: (d) => 'marker',
+        //                                     iconAtlas: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
+        //                                     iconMapping: {
+        //                                         marker: {x: 0, y: 0, width: 128, height: 128, mask: true}
+        //                                     },
+        //                                     getPosition: d => d.coordinates,
+        //                                     getColor: d => [Math.sqrt(d.exits), 140, 0],
+        //                                     getSize: d => 5,
+        //                                     // updateTriggers: {
+        //                                     //   // This tells deck.gl to recalculate radius when `currentYear` changes
+        //                                     //   getPosition: [imgInfoArray]
+        //                                     // },
+        //                                     // getAngle: (d) => - d.bearing, // negative of bearing as deck.gl uses counter clockwise rotations.
+        //                                     sizeScale: 8,
+        //                                     billboard: true,
+        //                                     pickable: true,
+        //                                     onHover: onHover,
+        //                                     onClick: onClick,
+        //                                   })
+        setLayers([ground, storey, exif3dCameraLayer])    
     }
   
 
