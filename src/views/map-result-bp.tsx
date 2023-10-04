@@ -29,7 +29,7 @@ import MetricDisplay from "../components/metric-display";
 // utils
 import { computeGeoMatrics } from "../utils/geo-operations";
 
-import farnham from "../data/farnham";
+import heritageTrail from "../data/heritageTrail";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { List } from "@mui/material";
 
@@ -233,7 +233,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
   
     const handleFileRead = (isFileUpload: boolean) => {
 
-      let result = JSON.stringify(farnham) as any;
+      let result = JSON.stringify(heritageTrail) as any;
       if (fileReader?.result) result = fileReader?.result;
 
       let geojson = JSON.parse(result);
@@ -316,7 +316,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
                         },
                     }}
                     >
-                    <Link href={genHrefAttribute(farnham)} download='farnham.geojson'>Farnham</Link>
+                    <Link href={genHrefAttribute(heritageTrail)} download='heritageTrail.geojson'>Heritage Trail</Link>
                   </Box>
                 </section>
 

@@ -135,7 +135,7 @@ export default function Main() {
         let lng = parseFloat(lon);
         if (lng > 0) lng = -Math.abs(parseFloat(lon));
 
-        const response = await fetch(api_url+"/api/v1/building-part/nearest?latitude="+parseFloat(lat)+"&longitude="+lng);
+        const response = await fetch(api_url+"/api/v1/building-part/nearest?latitude="+parseFloat(lat)+"&longitude="+lng+"&imagedirection="+camHeight);
         const data = await response.json();
 
         if (data.data.building_part.length > 0 && data.data.building_part[0].geojson) {
