@@ -13,7 +13,7 @@ import Link from '@mui/material/Link';
 import mapboxgl from 'mapbox-gl';
 import { Layer } from '@deck.gl/core/typed'
 import { DeckGL } from '@deck.gl/react/typed'
-import {GeoJsonLayer, IconLayer} from '@deck.gl/layers/typed'
+import {GeoJsonLayer, PolygonLayer, IconLayer} from '@deck.gl/layers/typed'
 import {ScenegraphLayer} from '@deck.gl/mesh-layers/typed';
 import { Map } from 'react-map-gl' 
 import Button from '@mui/material/Button';
@@ -32,6 +32,7 @@ import { computeGeoMatrics } from "../utils/geo-operations";
 import heritageTrail from "../data/heritageTrail";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { List } from "@mui/material";
+import { FeatureCollection } from "@turf/turf";
 
 
 // prevent mapboxgl from being transpiled by Babel
@@ -172,7 +173,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
   const { landArea, buildingArea, volume, buildingHeight } = metrics
   let fileReader: FileReader
 
-  const createDefaultBuilding = (land: string,building: string, buildingHeight: number, cameraGPSData: any): void => {
+  const createDefaultBuilding = (land: string, building: FeatureCollection, buildingHeight: number, cameraGPSData: any): void => {
     
         const ground = new GeoJsonLayer({  id: 'geojson-ground-layer',
                                                 data: land,
@@ -181,15 +182,50 @@ export default function MapResultBP({ geo }: MapResultProps) {
                                                 getLineWidth: () => 0.3,
                                                 opacity: 1 })
   
-        const storey = new GeoJsonLayer({   id: 'geojson-storey-building',
-                                            data: JSON.parse(building),
+        const buildingDataCopy = [...(building.features[0].geometry as any).coordinates]; 
+        let buildingCoords = buildingDataCopy[0].map((item: any) => {
+          item.push(building.features[0].properties!.absoluteheightminimum);
+          return item;
+        });
+        // buildingCoords = [buildingCoords];
+        const polygonData = [{
+          contour: buildingCoords
+        }];
+
+        console.log(polygonData);
+        const storey = new PolygonLayer({   id: 'geojson-storey-building',
+                                            data: polygonData,
                                             extruded: true,
                                             wireframe: true,
+                                            getPolygon: (d) =>{
+                                              return d.contour;
+                                            },
                                             getFillColor: [249,180,45,255],
                                             getLineColor: [0,0,0,255],
                                             getElevation: buildingHeight,
                                             opacity: 1 })
-
+        // const deckglMarkerLayer = new IconLayer({   id: 'exif-icon-kayer',
+        //                                     data: cameraGPSData,
+        //                                     getIcon: (d) => 'marker',
+        //                                     iconAtlas: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
+        //                                     iconMapping: {
+        //                                         marker: {x: 0, y: 0, width: 128, height: 128, mask: true}
+        //                                     },
+        //                                     getPosition: d => d.coordinates,
+        //                                     getColor: d => [Math.sqrt(d.exits), 140, 0],
+        //                                     getSize: d => 5,
+        //                                     // updateTriggers: {
+        //                                     //   // This tells deck.gl to recalculate radius when `currentYear` changes
+        //                                     //   getPosition: [imgInfoArray]
+        //                                     // },
+        //                                     // getAngle: (d) => - d.bearing, // negative of bearing as deck.gl uses counter clockwise rotations.
+        //                                     sizeScale: 8,
+        //                                     billboard: true,
+        //                                     pickable: true,
+        //                                     onHover: onHover,
+        //                                     onClick: onClick,
+        //                                   })
+        // setLayers([ground, storey, exif3dCameraLayer])
         const url = './cam.gltf';
         console.log(cameraGPSData)
         const exif3dCameraLayer = new ScenegraphLayer({   id: 'exif3d-camera-layer',
@@ -244,7 +280,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
       const { center, landArea, buildingArea, buildingHeight, volume } = computeGeoMatrics(geojson.features[0].geometry.coordinates,floorHeight,floorNumber,lotCoverage)
       const { geometry: { coordinates: [longitude,latitude]}} = center
 
-      createDefaultBuilding(geojson, JSON.stringify(geojson), parseFloat(geojson.features[0].properties.relativeheightmaximum), geo.cameraGPSData);
+      createDefaultBuilding(geojson, geojson, parseFloat(geojson.features[0].properties.relativeheightmaximum), geo.cameraGPSData);
       setViewState(prev => ({...prev, longitude, latitude, zoom: 18}))
       geojsonFileContents.current = geojson
       setCenterCoords([longitude,latitude])
