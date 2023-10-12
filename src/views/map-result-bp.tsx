@@ -15,6 +15,7 @@ import { Layer } from '@deck.gl/core/typed'
 import { DeckGL } from '@deck.gl/react/typed'
 import {GeoJsonLayer, PolygonLayer, IconLayer} from '@deck.gl/layers/typed'
 import {ScenegraphLayer} from '@deck.gl/mesh-layers/typed';
+import {TerrainLayer} from '@deck.gl/geo-layers/typed';
 import { Map } from 'react-map-gl' 
 import Button from '@mui/material/Button';
 
@@ -258,7 +259,18 @@ export default function MapResultBP({ geo }: MapResultProps) {
                                             onHover: onHover,
                                             onClick: onClick,
                                           })
-        setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer])    
+  
+  const deckglTerrainLayer = new TerrainLayer({
+    elevationDecoder: {
+      rScaler: 256,
+      gScaler: 1,
+      bScaler: 1 / 256,
+      offset: -32768
+    },
+                                            // Digital elevation model from https://www.usgs.gov/
+                                            elevationData: 'http://206.189.23.107:8091/data/su_/{z}/{x}/{y}.png',
+                                          });
+        setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer, deckglTerrainLayer])    
     }
   
 
@@ -403,7 +415,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
               layers={layers}
               controller={true}
             >
-              <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" />
+
             </DeckGL>
           </Container>
         </Box>
