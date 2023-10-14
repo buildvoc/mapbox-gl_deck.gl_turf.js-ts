@@ -42,6 +42,8 @@ import { FeatureCollection } from "@turf/turf";
 mapboxgl.workerClass = require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN as string;
 
+const api_url = "https://tile.buildingshistory.co.uk";
+
 const drawerWidth: number = 300;
 
 function onHover(info: any) {
@@ -268,7 +270,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
       offset: -32768
     },
                                             // Digital elevation model from https://www.usgs.gov/
-                                            elevationData: 'http://206.189.23.107:8091/data/su_/{z}/{x}/{y}.png',
+                                            elevationData: api_url+'/data/su_/{z}/{x}/{y}.png',
                                           });
         setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer, deckglTerrainLayer])    
     }
