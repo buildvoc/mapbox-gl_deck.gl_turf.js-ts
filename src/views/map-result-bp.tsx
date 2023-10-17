@@ -264,10 +264,10 @@ export default function MapResultBP({ geo }: MapResultProps) {
   
   const deckglTerrainLayer = new TerrainLayer({
     elevationDecoder: {
-      rScaler: 256,
-      gScaler: 1,
-      bScaler: 1 / 256,
-      offset: -32768
+      "rScaler": 6553.6,
+      "gScaler": 25.6,
+      "bScaler": 0.1,
+      "offset": -10000
     },
                                             // Digital elevation model from https://www.usgs.gov/
                                             elevationData: api_url+'/data/su_/{z}/{x}/{y}.png',
@@ -418,6 +418,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
               controller={true}
             >
 
+              <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" />
             </DeckGL>
           </Container>
         </Box>
