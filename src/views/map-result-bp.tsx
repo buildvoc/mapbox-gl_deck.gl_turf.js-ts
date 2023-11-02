@@ -272,7 +272,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
             offset: -32768,
         },
         // Digital elevation model from https://www.usgs.gov/
-        elevationData: 'SU84nw_elevation.png',
+        elevationData: 'SU84nw_DTM_1m.png',
         color: [255,255,255],
         bounds: [-0.8552938788056027, 51.197904494098374, -0.7848639958949948, 51.24357599144819]
       });
