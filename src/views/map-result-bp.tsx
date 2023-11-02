@@ -262,16 +262,19 @@ export default function MapResultBP({ geo }: MapResultProps) {
                                             onClick: onClick,
                                           })
   
-  const deckglTerrainLayer = new TerrainLayer({
-    elevationDecoder: {
-      "rScaler": 6553.6,
-      "gScaler": 25.6,
-      "bScaler": 0.1,
-      "offset": -10000
-    },
-                                            // Digital elevation model from https://www.usgs.gov/
-                                            elevationData: api_url+'/data/su_/{z}/{x}/{y}.png',
-                                          });
+      const deckglTerrainLayer = new TerrainLayer({
+        id: "terrain",
+        maxZoom: 15,
+        elevationDecoder: {
+            rScaler: 256,
+            gScaler: 1,
+            bScaler: 1 / 256,
+            offset: -32768,
+        },
+        // Digital elevation model from https://www.usgs.gov/
+        elevationData: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
+        texture: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      });
         setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer, deckglTerrainLayer])    
     }
   
@@ -418,7 +421,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
               controller={true}
             >
 
-              <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" />
+              {/* <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" /> */}
             </DeckGL>
           </Container>
         </Box>
