@@ -272,8 +272,9 @@ export default function MapResultBP({ geo }: MapResultProps) {
             offset: -32768,
         },
         // Digital elevation model from https://www.usgs.gov/
-        elevationData: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
-        texture: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        elevationData: 'SU84nw_elevation.png',
+        color: [255,255,255],
+        bounds: [-0.8552938788056027, 51.197904494098374, -0.7848639958949948, 51.24357599144819]
       });
         setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer, deckglTerrainLayer])    
     }
