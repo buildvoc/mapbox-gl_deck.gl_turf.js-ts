@@ -264,7 +264,6 @@ export default function MapResultBP({ geo }: MapResultProps) {
   
       const deckglTerrainLayer = new TerrainLayer({
         id: "terrain",
-        maxZoom: 15,
         elevationDecoder: {
             rScaler: 256,
             gScaler: 1,
@@ -272,9 +271,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
             offset: -32768,
         },
         // Digital elevation model from https://www.usgs.gov/
-        elevationData: 'SU84nw_DTM_1m.png',
-        color: [255,255,255],
-        bounds: [-0.8552938788056027, 51.197904494098374, -0.7848639958949948, 51.24357599144819]
+        elevationData: api_url+'/data/su_/{z}/{x}/{y}.png',
       });
         setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer, deckglTerrainLayer])    
     }
@@ -422,7 +419,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
               controller={true}
             >
 
-              {/* <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" /> */}
+              <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" />
             </DeckGL>
           </Container>
         </Box>
