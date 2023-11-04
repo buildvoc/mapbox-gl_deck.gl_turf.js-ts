@@ -264,16 +264,23 @@ export default function MapResultBP({ geo }: MapResultProps) {
   
       const deckglTerrainLayer = new TerrainLayer({
         id: "terrain",
-        maxZoom: 20,
+        maxZoom: 18,
         elevationDecoder: {
             rScaler: 256,
             gScaler: 1,
             bScaler: 1 / 256,
             offset: -32768,
         },
+        loadOptions: {
+          terrain: {
+            tesselator: "martini",
+            skirtHeight: 50,
+          }
+        },
         // Digital elevation model from https://www.usgs.gov/
         elevationData: api_url+'/data/su_/{z}/{x}/{y}.png',
-        texture: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+        texture: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        meshMaxError: 0.6
       });
         setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer, deckglTerrainLayer])    
     }
