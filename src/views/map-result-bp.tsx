@@ -11,7 +11,7 @@ import Link from '@mui/material/Link';
 
 
 import mapboxgl from 'mapbox-gl';
-import { Layer } from '@deck.gl/core/typed'
+import { Layer, LightingEffect, AmbientLight } from '@deck.gl/core/typed'
 import { DeckGL } from '@deck.gl/react/typed'
 import {GeoJsonLayer, PolygonLayer, IconLayer} from '@deck.gl/layers/typed'
 import {ScenegraphLayer} from '@deck.gl/mesh-layers/typed';
@@ -262,16 +262,26 @@ export default function MapResultBP({ geo }: MapResultProps) {
                                             onClick: onClick,
                                           })
   
-  const deckglTerrainLayer = new TerrainLayer({
-    elevationDecoder: {
-      "rScaler": 6553.6,
-      "gScaler": 25.6,
-      "bScaler": 0.1,
-      "offset": -10000
-    },
-                                            // Digital elevation model from https://www.usgs.gov/
-                                            elevationData: api_url+'/data/su_/{z}/{x}/{y}.png',
-                                          });
+      const deckglTerrainLayer = new TerrainLayer({
+        id: "terrain",
+        maxZoom: 16,
+        elevationDecoder: {
+            rScaler: 256,
+            gScaler: 1,
+            bScaler: 1 / 256,
+            offset: -32768,
+        },
+        loadOptions: {
+          terrain: {
+            tesselator: "martini",
+            skirtHeight: 50,
+          }
+        },
+        // Digital elevation model from https://www.usgs.gov/
+        elevationData: api_url+'/data/su_/{z}/{x}/{y}.png',
+        texture: 'https://server.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
+        meshMaxError: 0.6
+      });
         setLayers([ground, storey, exif3dCameraLayer, deckglMarkerLayer, deckglTerrainLayer])    
     }
   
@@ -416,6 +426,16 @@ export default function MapResultBP({ geo }: MapResultProps) {
               initialViewState={viewState}
               layers={layers}
               controller={true}
+              effects={[
+                new LightingEffect(
+                  {
+                    ambientLight: new AmbientLight({
+                      color: [255, 255, 255],
+                      intensity: 3
+                    }),
+                  }
+                )
+              ]}
             >
 
               <Map mapboxAccessToken={mapboxgl.accessToken} mapStyle="mapbox://styles/mapbox/streets-v9" />
