@@ -11,7 +11,7 @@ import Link from '@mui/material/Link';
 
 
 import mapboxgl from 'mapbox-gl';
-import { Layer, LightingEffect, AmbientLight } from '@deck.gl/core/typed'
+import { Layer, LightingEffect, AmbientLight, MapController } from '@deck.gl/core/typed'
 import { DeckGL } from '@deck.gl/react/typed'
 import {GeoJsonLayer, PolygonLayer, IconLayer} from '@deck.gl/layers/typed'
 import {ScenegraphLayer} from '@deck.gl/mesh-layers/typed';
@@ -292,7 +292,6 @@ export default function MapResultBP({ geo }: MapResultProps) {
     },[geo])
   
     const handleFileRead = (isFileUpload: boolean) => {
-
       let result = JSON.stringify(heritageTrail) as any;
       if (fileReader?.result) result = fileReader?.result;
 
@@ -425,7 +424,12 @@ export default function MapResultBP({ geo }: MapResultProps) {
             <DeckGL
               initialViewState={viewState}
               layers={layers}
-              controller={true}
+              controller={{
+                type: MapController,
+                inertia: true,
+                touchRotate: true,
+                dragMode: "pan"
+              }}
               effects={[
                 new LightingEffect(
                   {
