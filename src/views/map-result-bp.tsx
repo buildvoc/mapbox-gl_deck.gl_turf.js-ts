@@ -428,6 +428,7 @@ export default function MapResultBP({ geo }: MapResultProps) {
                 type: MapController,
                 inertia: true,
                 touchRotate: true,
+                touchZoom: true,
                 dragMode: "pan"
               }}
               effects={[
