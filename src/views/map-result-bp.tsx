@@ -426,7 +426,6 @@ export default function MapResultBP({ geo }: MapResultProps) {
               layers={layers}
               controller={{
                 type: MapController,
-                inertia: true,
                 touchRotate: true,
                 touchZoom: true,
                 dragMode: "pan"
