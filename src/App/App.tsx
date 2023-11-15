@@ -6,12 +6,12 @@ import '@fontsource/roboto/700.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './App.css';
 
-import { Main } from '../views';
+import Home from '../views/home'
 
 function App() {
   return (
     <div className="App" data-testid="App">
-      <Main />
+      <Home />
     </div>
   );
 }
