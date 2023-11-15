@@ -56,12 +56,23 @@ export const MainView = () => {
         tags.GPSAltitude?.description &&
         tags.GPSImgDirection?.description
       ) {
-        getPolygon(
-          tags.GPSLatitude.description,
-          tags.GPSLongitude.description,
-          tags.GPSAltitude?.description,
-          tags.GPSImgDirection?.description
+        const areGPSContainsNaN = ["NaN", "NaN m", ""].some((r: any) =>
+          [
+            tags?.GPSLongitude?.description,
+            tags.GPSAltitude?.description,
+          ].includes(r)
         );
+        if (!areGPSContainsNaN)
+          getPolygon(
+            tags.GPSLatitude.description,
+            tags.GPSLongitude.description,
+            tags.GPSAltitude?.description,
+            tags.GPSImgDirection?.description
+          );
+        else {
+          alert("Image reader can't read gps");
+          setLoading(false);
+        }
       } else {
         alert("Image doesn't have gps");
         setLoading(false);

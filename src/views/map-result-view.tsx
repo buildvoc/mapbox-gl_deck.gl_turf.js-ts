@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Container from "@mui/material/Container";
 
-import { Layer, LightingEffect, AmbientLight } from "@deck.gl/core/typed";
+import { Layer, LightingEffect, AmbientLight, MapController } from "@deck.gl/core/typed";
 import { DeckGL } from "@deck.gl/react/typed";
 import { GeoJsonLayer, PolygonLayer, IconLayer } from "@deck.gl/layers/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
@@ -276,7 +276,12 @@ export const MapResultView = ({ geo }: MapResultViewProps) => {
             <DeckGL
               initialViewState={viewState}
               layers={layers}
-              controller={true}
+              controller={{
+                type: MapController,
+                touchRotate: true,
+                touchZoom: true,
+                dragMode: "pan"
+              }}
               effects={[
                 new LightingEffect({
                   ambientLight: new AmbientLight({
