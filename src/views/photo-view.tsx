@@ -123,7 +123,6 @@ export const PhotoView = ({
     ));
   }, [tags]);
 
-  console.log(previewImg);
   return (
     <>
       <Drawer
