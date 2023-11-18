@@ -177,7 +177,7 @@ export const MapResultView = ({ geo }: MapResultViewProps) => {
       // Digital elevation model from https://www.usgs.gov/
       elevationData: api_url + "/data/su_/{z}/{x}/{y}.png",
       texture:
-        "https://api.os.uk/maps/raster/v1/zxy/Road_3857/{z}/{x}/{y}.png?key=wXtior9ubP6EFLYP5l6isfWZYiKqOlf7",
+        "https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/{z}/{x}/{y}.png?key=wXtior9ubP6EFLYP5l6isfWZYiKqOlf7",
       meshMaxError: 0.6,
     });
     setLayers([
