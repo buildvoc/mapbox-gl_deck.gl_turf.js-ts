@@ -177,7 +177,7 @@ export const MapResultView = ({ geo }: MapResultViewProps) => {
       // Digital elevation model from https://www.usgs.gov/
       elevationData: api_url + "/data/su_/{z}/{x}/{y}.png",
       texture:
-        "https://server.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
+        "https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/{z}/{x}/{y}.png?key=wXtior9ubP6EFLYP5l6isfWZYiKqOlf7",
       meshMaxError: 0.6,
     });
     setLayers([
