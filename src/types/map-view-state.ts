@@ -7,8 +7,8 @@ export interface MapViewState {
   longitude: number;
   maxPitch?: number;
   maxZoom?: number;
-  zoom: number;
-  pitch: number;
+  zoom?: number;
+  pitch?: number;
   minPitch?: number;
   minZoom?: number;
   normalize?: boolean;

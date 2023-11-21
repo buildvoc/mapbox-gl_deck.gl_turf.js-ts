@@ -1,9 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Container from "@mui/material/Container";
 
-import { Layer, LightingEffect, AmbientLight, MapController } from "@deck.gl/core/typed";
+import {
+  Layer,
+  LightingEffect,
+  AmbientLight,
+  MapController,
+  FirstPersonController,
+  FirstPersonView,
+  MapView,
+} from "@deck.gl/core/typed";
 import { DeckGL } from "@deck.gl/react/typed";
 import { GeoJsonLayer, PolygonLayer, IconLayer } from "@deck.gl/layers/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
@@ -16,8 +24,8 @@ import heritageTrail from "../data/heritage-trail";
 import { FeatureCollection } from "@turf/turf";
 import { BuildingAttributes } from "../components/building-attributes";
 import { UserInputs } from "../types/user-inputs";
-import { MapViewState } from "../types/map-view-state";
 import { Metrics } from "../types/metrics";
+import { ViewStateChangeParameters } from "@deck.gl/core/typed/controllers/controller";
 
 const api_url = "https://tile.buildingshistory.co.uk";
 
@@ -60,9 +68,10 @@ function onClick(info: any) {
 
 interface MapResultViewProps {
   geo: any;
+  view: "firstPerson" | "map";
 }
 
-export const MapResultView = ({ geo }: MapResultViewProps) => {
+export const MapResultView = ({ geo, view }: MapResultViewProps) => {
   const [inputs, setInputs] = useState<UserInputs>({
     lotCoverage: 50,
     floorNumber: 10,
@@ -73,12 +82,24 @@ export const MapResultView = ({ geo }: MapResultViewProps) => {
     coordinates: [[]],
   });
   const [layers, setLayers] = useState<Layer[]>([]);
-  const [viewState, setViewState] = useState<MapViewState>({
-    latitude: 46.203589,
-    longitude: 6.1369,
-    zoom: 4,
-    pitch: 45,
+  const viewStateRef = useRef<{
+    mapView: Record<string, any>;
+    firstPersonView: Record<string, any>;
+  }>({
+    mapView: { latitude: 46.203589, longitude: 6.1369, zoom: 17.5, pitch: 45 },
+    firstPersonView: {
+      latitude: 46.203589,
+      longitude: 6.1369,
+      position: [0, -60, 120],
+      pitch: 20,
+      bearing: 0,
+    },
   });
+  const [viewState, setViewState] = useState<{
+    mapView: Record<string, any>;
+    firstPersonView: Record<string, any>;
+  }>(viewStateRef.current);
+
   const [metrics, setMetrics] = useState<Metrics>({
     landArea: 0,
     buildingArea: 0,
@@ -222,7 +243,40 @@ export const MapResultView = ({ geo }: MapResultViewProps) => {
       parseFloat(geojson.features[0].properties.relativeheightmaximum),
       geo.cameraGPSData
     );
-    setViewState((prev) => ({ ...prev, longitude, latitude, zoom: 18 }));
+    setViewState(() => {
+      return {
+        mapView: {
+          ...viewStateRef.current.mapView,
+          longitude,
+          latitude,
+          zoom: 17.5,
+        },
+        firstPersonView: {
+          ...viewStateRef.current.firstPersonView,
+          longitude,
+          latitude,
+          position: [0, -60, 120],
+          pitch: 20,
+          bearing: 0,
+        },
+      };
+    });
+    viewStateRef.current = {
+      mapView: {
+        ...viewStateRef.current.mapView,
+        longitude,
+        latitude,
+        zoom: 17.5,
+      },
+      firstPersonView: {
+        ...viewStateRef.current.firstPersonView,
+        longitude,
+        latitude,
+        position: [0, -60, 120],
+        pitch: 20,
+        bearing: 0,
+      },
+    };
     setGeojsonFileContents(geojson);
     setMetrics({
       landArea,
@@ -236,6 +290,62 @@ export const MapResultView = ({ geo }: MapResultViewProps) => {
       setInputs({ lotCoverage: 50, floorNumber: 10, floorHeight: 10 });
     }
   };
+
+  const onViewStateChangeHandler = (parameters: ViewStateChangeParameters) => {
+    const { viewState, oldViewState } = parameters;
+    if (
+      oldViewState?.longitude !== viewStateRef.current.mapView.longitude ||
+      oldViewState?.latitude !== viewStateRef.current.mapView.latitude
+    ) {
+      return;
+    }
+    if (view === "map") {
+      viewStateRef.current = {
+        mapView: viewState,
+        firstPersonView: {
+          ...viewStateRef.current.firstPersonView,
+          longitude: viewState.longitude,
+          latitude: viewState.latitude,
+        },
+      };
+    } else {
+      viewStateRef.current = {
+        mapView: {
+          ...viewStateRef.current.mapView,
+          longitude: viewState.longitude,
+          latitude: viewState.latitude,
+        },
+        firstPersonView: viewState,
+      };
+    }
+    setViewState(viewStateRef.current);
+  };
+
+  const VIEWS = useMemo(
+    () =>
+      view === "map"
+        ? [
+            new MapView({
+              id: "mapView",
+              controller: {
+                type: MapController,
+                touchRotate: true,
+                touchZoom: true,
+                dragMode: "pan",
+              },
+              farZMultiplier: 2.02,
+            }),
+          ]
+        : [
+            new FirstPersonView({
+              id: "firstPersonView",
+              controller: {
+                type: FirstPersonController,
+              },
+            }),
+          ],
+    [view]
+  );
 
   return (
     <>
@@ -274,14 +384,12 @@ export const MapResultView = ({ geo }: MapResultViewProps) => {
             ></div>
 
             <DeckGL
-              initialViewState={viewState}
+              viewState={
+                view === "map" ? viewState.mapView : viewState.firstPersonView
+              }
+              onViewStateChange={onViewStateChangeHandler}
               layers={layers}
-              controller={{
-                type: MapController,
-                touchRotate: true,
-                touchZoom: true,
-                dragMode: "pan"
-              }}
+              views={VIEWS}
               effects={[
                 new LightingEffect({
                   ambientLight: new AmbientLight({
