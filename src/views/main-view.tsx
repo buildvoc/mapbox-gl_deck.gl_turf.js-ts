@@ -26,7 +26,7 @@ export const MainView = () => {
     undefined
   );
 
-  const [view, setView] = useState<"firstPerson" | "map">("map");
+  const [view, setView] = useState<"firstPerson" | "map">("firstPerson");
 
   useEffect(() => {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
