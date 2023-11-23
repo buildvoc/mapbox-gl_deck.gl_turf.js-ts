@@ -26,6 +26,8 @@ export const MainView = () => {
     undefined
   );
 
+  const [view, setView] = useState<"firstPerson" | "map">("firstPerson");
+
   useEffect(() => {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
   }, [activeLayout]);
@@ -154,6 +156,14 @@ export const MainView = () => {
     }
   };
 
+  const onViewToggleHandler = () => {
+    if (view === "firstPerson") {
+      setView("map");
+    } else {
+      setView("firstPerson");
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", height: "100vh" }} ref={ref}>
       <CssBaseline />
@@ -166,10 +176,15 @@ export const MainView = () => {
           setExtractedDrawerOpen={setExtractedDrawerOpen}
         />
       ) : (
-        <MapResultView geo={geo} />
+        <MapResultView geo={geo} view={view} />
       )}
 
-      <BottomNav value={activeLayout} onChange={onLayoutChange} />
+      <BottomNav
+        value={activeLayout}
+        view={view}
+        onChange={onLayoutChange}
+        onViewToggle={onViewToggleHandler}
+      />
 
       <Snackbar open={errMsg} autoHideDuration={6000}>
         <Alert severity="success" sx={{ width: "100%" }}>
