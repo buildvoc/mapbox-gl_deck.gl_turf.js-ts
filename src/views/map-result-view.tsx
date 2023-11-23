@@ -13,9 +13,15 @@ import {
   MapView,
 } from "@deck.gl/core/typed";
 import { DeckGL } from "@deck.gl/react/typed";
-import { GeoJsonLayer, PolygonLayer, IconLayer } from "@deck.gl/layers/typed";
+import {
+  GeoJsonLayer,
+  PolygonLayer,
+  IconLayer,
+  PointCloudLayer,
+} from "@deck.gl/layers/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
 import { TerrainLayer } from "@deck.gl/geo-layers/typed";
+import { LASLoader } from "@loaders.gl/las";
 
 import { FileContents } from "../types/file";
 import { computeGeoMatrics } from "../utils/geo-operations";
@@ -26,6 +32,9 @@ import { BuildingAttributes } from "../components/building-attributes";
 import { UserInputs } from "../types/user-inputs";
 import { Metrics } from "../types/metrics";
 import { ViewStateChangeParameters } from "@deck.gl/core/typed/controllers/controller";
+import { LazFile } from "../types/laz";
+import { transformLazData } from "../utils/projection";
+import { load } from "@loaders.gl/core";
 
 const api_url = "https://tile.buildingshistory.co.uk";
 
@@ -69,9 +78,16 @@ function onClick(info: any) {
 interface MapResultViewProps {
   geo: any;
   view: "firstPerson" | "map";
+  drawLaz: boolean;
+  lazFile: LazFile | null;
 }
 
-export const MapResultView = ({ geo, view }: MapResultViewProps) => {
+export const MapResultView = ({
+  geo,
+  view,
+  drawLaz,
+  lazFile,
+}: MapResultViewProps) => {
   const [inputs, setInputs] = useState<UserInputs>({
     lotCoverage: 50,
     floorNumber: 10,
@@ -106,6 +122,30 @@ export const MapResultView = ({ geo, view }: MapResultViewProps) => {
     volume: 0,
     buildingHeight: inputs.floorHeight * inputs.floorNumber,
   });
+
+  useEffect(() => {
+    if (drawLaz && lazFile) {
+      const drawLaz = async () => {
+        const data = await load(lazFile.url, LASLoader);
+        transformLazData(data);
+        const newLayers = layers.filter((layer) => layer.id !== "las");
+        newLayers.push(
+          new PointCloudLayer({
+            id: "las",
+            data,
+            getNormal: [0, 1, 0],
+            getColor: [0, 0, 255],
+            opacity: 0.5,
+            pointSize: 0.5,
+            loaders: [LASLoader],
+          })
+        );
+        setLayers(newLayers);
+      };
+      drawLaz();
+    }
+  // eslint-disable-next-line
+  }, [drawLaz, lazFile]);
 
   const { lotCoverage, floorNumber, floorHeight } = inputs;
 
