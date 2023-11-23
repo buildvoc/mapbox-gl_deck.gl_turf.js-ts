@@ -135,8 +135,8 @@ export const MapResultView = ({
             data,
             getNormal: [0, 1, 0],
             getColor: [0, 0, 255],
-            opacity: 0.5,
-            pointSize: 0.5,
+            opacity: 1,
+            pointSize: view === "firstPerson" ? 50 : 1,
             loaders: [LASLoader],
           })
         );
@@ -144,8 +144,8 @@ export const MapResultView = ({
       };
       drawLaz();
     }
-  // eslint-disable-next-line
-  }, [drawLaz, lazFile]);
+    // eslint-disable-next-line
+  }, [drawLaz, lazFile, view]);
 
   const { lotCoverage, floorNumber, floorHeight } = inputs;
 
