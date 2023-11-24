@@ -10,6 +10,7 @@ import { InfoModal } from "../components/info-modal";
 import { BottomNav } from "../components/bottom-navigation";
 import { PhotoView } from "./photo-view";
 import { InfoButton } from "../components/info-button";
+import { LazFile } from "../types/laz";
 
 const API_URL = "https://api.buildingshistory.co.uk";
 
@@ -27,6 +28,9 @@ export const MainView = () => {
   );
 
   const [view, setView] = useState<"firstPerson" | "map">("firstPerson");
+
+  const [lazFile, setLazFile] = useState<null | LazFile>(null);
+  const [drawLaz, setDrawLaz] = useState<boolean>(false);
 
   useEffect(() => {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
@@ -164,6 +168,15 @@ export const MainView = () => {
     }
   };
 
+  const onLazChangeHandler = (file: LazFile) => {
+    setDrawLaz(false);
+    setLazFile(file);
+  };
+
+  const drawLazHandler = () => {
+    setDrawLaz(true);
+  };
+
   return (
     <Box sx={{ display: "flex", height: "100vh" }} ref={ref}>
       <CssBaseline />
@@ -176,14 +189,22 @@ export const MainView = () => {
           setExtractedDrawerOpen={setExtractedDrawerOpen}
         />
       ) : (
-        <MapResultView geo={geo} view={view} />
+        <MapResultView
+          geo={geo}
+          view={view}
+          drawLaz={drawLaz}
+          lazFile={lazFile}
+        />
       )}
 
       <BottomNav
         value={activeLayout}
         view={view}
+        lazFile={lazFile}
         onChange={onLayoutChange}
         onViewToggle={onViewToggleHandler}
+        onLazChange={onLazChangeHandler}
+        drawLaz={drawLazHandler}
       />
 
       <Snackbar open={errMsg} autoHideDuration={6000}>
