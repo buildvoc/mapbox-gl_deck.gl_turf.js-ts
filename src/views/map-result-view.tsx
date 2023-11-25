@@ -36,8 +36,6 @@ import { LazFile } from "../types/laz";
 import { transformLazData } from "../utils/projection";
 import { load } from "@loaders.gl/core";
 
-const api_url = "https://tile.buildingshistory.co.uk";
-
 function onHover(info: any) {
   const { x, y, object } = info;
   const tooltipElement = document.getElementById("custom-tooltip");
@@ -224,10 +222,10 @@ export const MapResultView = ({
       id: "terrain",
       maxZoom: 16,
       elevationDecoder: {
-        rScaler: 256,
-        gScaler: 1,
-        bScaler: 1 / 256,
-        offset: -32768,
+        rScaler: 6553.6,
+        gScaler: 25.6,
+        bScaler: 0.1,
+        offset: -10000
       },
       loadOptions: {
         terrain: {
@@ -236,7 +234,8 @@ export const MapResultView = ({
         },
       },
       // Digital elevation model from https://www.usgs.gov/
-      elevationData: api_url + "/data/su_/{z}/{x}/{y}.png",
+      elevationData:
+        "https://tiles.buildingshistory.co.uk/geoserver/gwc/service/tms/1.0.0/dem%3ARGB_Terrain@WebMercatorQuad@png/{z}/{x}/{y}.png?flipY=true",
       texture:
         "https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/{z}/{x}/{y}.png?key=wXtior9ubP6EFLYP5l6isfWZYiKqOlf7",
       meshMaxError: 0.6,
