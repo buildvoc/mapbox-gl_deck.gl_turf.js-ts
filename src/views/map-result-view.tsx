@@ -100,7 +100,7 @@ export const MapResultView = ({
     mapView: Record<string, any>;
     firstPersonView: Record<string, any>;
   }>({
-    mapView: { latitude: 46.203589, longitude: 6.1369, zoom: 17.5, pitch: 45 },
+    mapView: { latitude: 46.203589, longitude: 6.1369, zoom: 17.5, pitch: 45, maxPitch: 89 },
     firstPersonView: {
       latitude: 46.203589,
       longitude: 6.1369,
@@ -282,6 +282,7 @@ export const MapResultView = ({
       parseFloat(geojson.features[0].properties.relativeheightmaximum),
       geo.cameraGPSData
     );
+    const polygonElevation = geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
     setViewState(() => {
       return {
         mapView: {
@@ -289,6 +290,7 @@ export const MapResultView = ({
           longitude,
           latitude,
           zoom: 17.5,
+          position: [0, 0, polygonElevation],
         },
         firstPersonView: {
           ...viewStateRef.current.firstPersonView,
@@ -306,6 +308,7 @@ export const MapResultView = ({
         longitude,
         latitude,
         zoom: 17.5,
+        position: [0, 0, polygonElevation],
       },
       firstPersonView: {
         ...viewStateRef.current.firstPersonView,
