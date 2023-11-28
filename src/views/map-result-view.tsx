@@ -100,7 +100,13 @@ export const MapResultView = ({
     mapView: Record<string, any>;
     firstPersonView: Record<string, any>;
   }>({
-    mapView: { latitude: 46.203589, longitude: 6.1369, zoom: 17.5, pitch: 45, maxPitch: 89 },
+    mapView: {
+      latitude: 46.203589,
+      longitude: 6.1369,
+      zoom: 17.5,
+      pitch: 45,
+      maxPitch: 85,
+    },
     firstPersonView: {
       latitude: 46.203589,
       longitude: 6.1369,
@@ -225,7 +231,7 @@ export const MapResultView = ({
         rScaler: 6553.6,
         gScaler: 25.6,
         bScaler: 0.1,
-        offset: -10000
+        offset: -10000,
       },
       loadOptions: {
         terrain: {
