@@ -32,9 +32,10 @@ import { BuildingAttributes } from "../components/building-attributes";
 import { UserInputs } from "../types/user-inputs";
 import { Metrics } from "../types/metrics";
 import { ViewStateChangeParameters } from "@deck.gl/core/typed/controllers/controller";
-import { LazFile } from "../types/laz";
 import { transformLazData } from "../utils/projection";
 import { load } from "@loaders.gl/core";
+import { NginxFile } from "../types/nginx";
+import { LAZ_FILES_LIST_URL } from "../constants";
 
 function onHover(info: any) {
   const { x, y, object } = info;
@@ -77,7 +78,7 @@ interface MapResultViewProps {
   geo: any;
   view: "firstPerson" | "map";
   drawLaz: boolean;
-  lazFile: LazFile | null;
+  lazFile: NginxFile | null;
 }
 
 export const MapResultView = ({
@@ -130,7 +131,8 @@ export const MapResultView = ({
   useEffect(() => {
     if (drawLaz && lazFile) {
       const drawLaz = async () => {
-        const data = await load(lazFile.url, LASLoader);
+        const url = `${LAZ_FILES_LIST_URL}${lazFile.name}`;
+        const data = await load(url, LASLoader);
         transformLazData(data);
         const newLayers = layers.filter((layer) => layer.id !== "las");
         newLayers.push(
@@ -288,7 +290,8 @@ export const MapResultView = ({
       parseFloat(geojson.features[0].properties.relativeheightmaximum),
       geo.cameraGPSData
     );
-    const polygonElevation = geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
+    const polygonElevation =
+      geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
     setViewState(() => {
       return {
         mapView: {
