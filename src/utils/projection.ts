@@ -1,9 +1,7 @@
 import { Proj4Projection } from "@math.gl/proj4";
 
-const OSGB36_BRITISH_NATIONAL_GRID =
-  "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +nadgrids=OSTN15_NTv2_OSGBtoETRS.gsb +units=m +no_defs +type=crs";
 export const positionProjection = new Proj4Projection({
-  from: OSGB36_BRITISH_NATIONAL_GRID,
+  from: "EPSG:3857",
   to: "WGS84",
 });
 
