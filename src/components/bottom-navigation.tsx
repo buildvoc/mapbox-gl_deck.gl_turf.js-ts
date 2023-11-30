@@ -16,20 +16,9 @@ import { CameraAlt, PinDrop } from "@mui/icons-material";
 import StreetviewIcon from "@mui/icons-material/Streetview";
 import MapIcon from "@mui/icons-material/Map";
 import styled from "@emotion/styled";
-import { LazFile } from "../types/laz";
-
-const LAZ_FILES: LazFile[] = [
-  {
-    id: "su-farnham-castle.laz",
-    name: "su-farnham-castle.laz",
-    url: "https://building-height.co.uk/data/su-farnham-castle.laz",
-  },
-  {
-    id: "su-farnham-st-andrews-church.laz",
-    name: "su-farnham-st-andrews-church.laz",
-    url: "https://building-height.co.uk/data/su-farnham-st-andrews-church.laz",
-  },
-];
+import { useEffect, useState } from "react";
+import { NginxFile } from "../types/nginx";
+import { LAZ_FILES_LIST_URL } from "../constants";
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
@@ -40,10 +29,10 @@ const StyledIconButton = styled(IconButton)`
 interface BottomNavProps {
   value: number;
   view: "firstPerson" | "map";
-  lazFile: LazFile | null;
+  lazFile: NginxFile | null;
   onChange: (newValue: number) => void;
   onViewToggle: () => void;
-  onLazChange: (url: LazFile) => void;
+  onLazChange: (url: NginxFile) => void;
   drawLaz: () => void;
 }
 
@@ -56,8 +45,19 @@ export const BottomNav = ({
   onLazChange,
   drawLaz
 }: BottomNavProps) => {
+  const [lazList, setLazList] = useState<NginxFile[]>([]);
+
+  useEffect(() => {
+    const getLazFilesList = async() => {
+      const response = await fetch(LAZ_FILES_LIST_URL);
+      const result = await response.json();
+      setLazList(result as NginxFile[]);
+    }
+    getLazFilesList();
+  }, []);
+
   const onLazChangeHandler = (event: SelectChangeEvent) => {
-    const file = LAZ_FILES.find((file) => file.id === event.target.value);
+    const file = lazList.find((file) => file.name === event.target.value);
     if (file) {
       onLazChange(file);
     }
@@ -87,12 +87,12 @@ export const BottomNav = ({
                 <InputLabel id="select-laz">Laz file</InputLabel>
                 <Select
                   labelId="select-laz"
-                  value={lazFile?.id || ""}
+                  value={lazFile?.name || ""}
                   label="Laz file"
                   onChange={onLazChangeHandler}
                 >
-                  {LAZ_FILES.map((file) => (
-                    <MenuItem key={file.id} value={file.id}>
+                  {lazList.map((file) => (
+                    <MenuItem key={file.name} value={file.name}>
                       {file.name}
                     </MenuItem>
                   ))}

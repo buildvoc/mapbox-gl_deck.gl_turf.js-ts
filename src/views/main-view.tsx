@@ -10,7 +10,7 @@ import { InfoModal } from "../components/info-modal";
 import { BottomNav } from "../components/bottom-navigation";
 import { PhotoView } from "./photo-view";
 import { InfoButton } from "../components/info-button";
-import { LazFile } from "../types/laz";
+import { NginxFile } from "../types/nginx";
 
 const API_URL = "https://api.buildingshistory.co.uk";
 
@@ -29,7 +29,7 @@ export const MainView = () => {
 
   const [view, setView] = useState<"firstPerson" | "map">("firstPerson");
 
-  const [lazFile, setLazFile] = useState<null | LazFile>(null);
+  const [lazFile, setLazFile] = useState<null | NginxFile>(null);
   const [drawLaz, setDrawLaz] = useState<boolean>(false);
 
   useEffect(() => {
@@ -168,7 +168,7 @@ export const MainView = () => {
     }
   };
 
-  const onLazChangeHandler = (file: LazFile) => {
+  const onLazChangeHandler = (file: NginxFile) => {
     setDrawLaz(false);
     setLazFile(file);
   };
