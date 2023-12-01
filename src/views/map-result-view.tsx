@@ -76,7 +76,7 @@ function onClick(info: any) {
 
 interface MapResultViewProps {
   geo: any;
-  view: "firstPerson" | "map";
+  view: "firstPerson" | "map" | "orthographic";
   drawLaz: boolean;
   lazFile: NginxFile | null;
 }
@@ -113,6 +113,7 @@ export const MapResultView = ({
       longitude: 6.1369,
       position: [0, -60, 120],
       pitch: 20,
+      maxPitch: 89,
       bearing: 0,
     },
   });
@@ -258,6 +259,19 @@ export const MapResultView = ({
   };
 
   useEffect(() => {
+    if (view === "orthographic") {
+      viewStateRef.current = {
+        ...viewStateRef.current,
+        mapView: {
+          ...viewStateRef.current.mapView,
+          pitch: 0,
+        },
+      };
+      setViewState(viewStateRef.current);
+    }
+  }, [view]);
+
+  useEffect(() => {
     handleFileRead(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geo]);
@@ -292,25 +306,9 @@ export const MapResultView = ({
     );
     const polygonElevation =
       geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
-    setViewState(() => {
-      return {
-        mapView: {
-          ...viewStateRef.current.mapView,
-          longitude,
-          latitude,
-          zoom: 17.5,
-          position: [0, 0, polygonElevation],
-        },
-        firstPersonView: {
-          ...viewStateRef.current.firstPersonView,
-          longitude,
-          latitude,
-          position: [0, -60, 120],
-          pitch: 20,
-          bearing: 0,
-        },
-      };
-    });
+    const camera = geo?.cameraGPSData?.[0];
+    const bearing = camera?.bearing ? camera?.bearing : 0;
+    console.log(bearing);
     viewStateRef.current = {
       mapView: {
         ...viewStateRef.current.mapView,
@@ -321,13 +319,15 @@ export const MapResultView = ({
       },
       firstPersonView: {
         ...viewStateRef.current.firstPersonView,
-        longitude,
-        latitude,
-        position: [0, -60, 120],
-        pitch: 20,
-        bearing: 0,
+        longitude: camera?.coordinates?.[0] || longitude,
+        latitude: camera?.coordinates?.[1] || latitude,
+        position: [0, 0, camera?.coordinates?.[2] + 3 || polygonElevation + 3],
+        pitch: 0,
+        bearing,
       },
     };
+    setViewState(viewStateRef.current);
+
     setGeojsonFileContents(geojson);
     setMetrics({
       landArea,
@@ -344,13 +344,17 @@ export const MapResultView = ({
 
   const onViewStateChangeHandler = (parameters: ViewStateChangeParameters) => {
     const { viewState, oldViewState } = parameters;
+    const viewToCompare =
+      view === "firstPerson"
+        ? viewStateRef.current.firstPersonView
+        : viewStateRef.current.mapView;
     if (
-      oldViewState?.longitude !== viewStateRef.current.mapView.longitude ||
-      oldViewState?.latitude !== viewStateRef.current.mapView.latitude
+      oldViewState?.longitude !== viewToCompare.longitude ||
+      oldViewState?.latitude !== viewToCompare.latitude
     ) {
       return;
     }
-    if (view === "map") {
+    if (view === "map" || view === "orthographic") {
       viewStateRef.current = {
         mapView: viewState,
         firstPersonView: {
@@ -374,7 +378,7 @@ export const MapResultView = ({
 
   const VIEWS = useMemo(
     () =>
-      view === "map"
+      view === "map" || view === "orthographic"
         ? [
             new MapView({
               id: "mapView",
@@ -382,9 +386,9 @@ export const MapResultView = ({
                 type: MapController,
                 touchRotate: true,
                 touchZoom: true,
-                dragMode: "pan",
               },
               farZMultiplier: 2.02,
+              orthographic: view === "orthographic",
             }),
           ]
         : [
@@ -436,7 +440,9 @@ export const MapResultView = ({
 
             <DeckGL
               viewState={
-                view === "map" ? viewState.mapView : viewState.firstPersonView
+                view === "map" || view === "orthographic"
+                  ? viewState.mapView
+                  : viewState.firstPersonView
               }
               onViewStateChange={onViewStateChangeHandler}
               layers={layers}

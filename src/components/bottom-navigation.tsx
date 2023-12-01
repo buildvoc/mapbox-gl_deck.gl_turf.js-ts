@@ -2,7 +2,6 @@ import {
   Paper,
   BottomNavigation,
   BottomNavigationAction,
-  IconButton,
   Box,
   Stack,
   Button,
@@ -13,25 +12,17 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { CameraAlt, PinDrop } from "@mui/icons-material";
-import StreetviewIcon from "@mui/icons-material/Streetview";
-import MapIcon from "@mui/icons-material/Map";
-import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 import { NginxFile } from "../types/nginx";
 import { LAZ_FILES_LIST_URL } from "../constants";
-
-const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  right: 2px;
-  bottom: 2px;
-`;
+import { MapViewSelect } from "./map-view-select";
 
 interface BottomNavProps {
   value: number;
-  view: "firstPerson" | "map";
+  view: "firstPerson" | "map" | "orthographic";
   lazFile: NginxFile | null;
   onChange: (newValue: number) => void;
-  onViewToggle: () => void;
+  onViewSet: (view: "firstPerson" | "map" | "orthographic") => void;
   onLazChange: (url: NginxFile) => void;
   drawLaz: () => void;
 }
@@ -41,18 +32,18 @@ export const BottomNav = ({
   view,
   lazFile,
   onChange,
-  onViewToggle,
+  onViewSet,
   onLazChange,
-  drawLaz
+  drawLaz,
 }: BottomNavProps) => {
   const [lazList, setLazList] = useState<NginxFile[]>([]);
 
   useEffect(() => {
-    const getLazFilesList = async() => {
+    const getLazFilesList = async () => {
       const response = await fetch(LAZ_FILES_LIST_URL);
       const result = await response.json();
       setLazList(result as NginxFile[]);
-    }
+    };
     getLazFilesList();
   }, []);
 
@@ -114,16 +105,7 @@ export const BottomNav = ({
           <BottomNavigationAction label="Capture" icon={<CameraAlt />} />
           <BottomNavigationAction label="Result" icon={<PinDrop />} />
         </BottomNavigation>
-        {value === 1 && (
-          <StyledIconButton
-            size="large"
-            color="secondary"
-            onClick={onViewToggle}
-          >
-            {view === "firstPerson" && <StreetviewIcon fontSize="inherit" />}
-            {view === "map" && <MapIcon fontSize="inherit" />}
-          </StyledIconButton>
-        )}
+        {value === 1 && <MapViewSelect view={view} onViewSet={onViewSet} />}
       </Paper>
     </>
   );
