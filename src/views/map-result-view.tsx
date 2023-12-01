@@ -308,7 +308,6 @@ export const MapResultView = ({
       geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
     const camera = geo?.cameraGPSData?.[0];
     const bearing = camera?.bearing ? camera?.bearing : 0;
-    console.log(bearing);
     viewStateRef.current = {
       mapView: {
         ...viewStateRef.current.mapView,
