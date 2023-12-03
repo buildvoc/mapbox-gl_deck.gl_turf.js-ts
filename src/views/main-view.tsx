@@ -11,6 +11,7 @@ import { BottomNav } from "../components/bottom-navigation";
 import { PhotoView } from "./photo-view";
 import { InfoButton } from "../components/info-button";
 import { NginxFile } from "../types/nginx";
+import { useKeyboard } from "../hooks/useKeyboard";
 
 const API_URL = "https://api.buildingshistory.co.uk";
 
@@ -27,7 +28,10 @@ export const MainView = () => {
     undefined
   );
 
-  const [view, setView] = useState<"firstPerson" | "map">("firstPerson");
+  const [view, setView] = useState<"firstPerson" | "map" | "orthographic">(
+    "firstPerson"
+  );
+  useKeyboard(setView);
 
   const [lazFile, setLazFile] = useState<null | NginxFile>(null);
   const [drawLaz, setDrawLaz] = useState<boolean>(false);
@@ -160,12 +164,8 @@ export const MainView = () => {
     }
   };
 
-  const onViewToggleHandler = () => {
-    if (view === "firstPerson") {
-      setView("map");
-    } else {
-      setView("firstPerson");
-    }
+  const onViewSetHandler = (view: "firstPerson" | "map" | "orthographic") => {
+    setView(view);
   };
 
   const onLazChangeHandler = (file: NginxFile) => {
@@ -202,7 +202,7 @@ export const MainView = () => {
         view={view}
         lazFile={lazFile}
         onChange={onLayoutChange}
-        onViewToggle={onViewToggleHandler}
+        onViewSet={onViewSetHandler}
         onLazChange={onLazChangeHandler}
         drawLaz={drawLazHandler}
       />
