@@ -24,7 +24,7 @@ export const MainView = () => {
   const [activeLayout, setActiveLayout] = React.useState(LAYOUT.PHOTO);
   const ref = React.useRef<HTMLDivElement>(null);
 
-  const [selectedImg, setSelectedImg] = useState<string | null | undefined>(
+  const [selectedImg, setSelectedImg] = useState<File | null | undefined>(
     undefined
   );
 
@@ -50,6 +50,18 @@ export const MainView = () => {
       return;
     }
     handleImage(selectedImg);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedImg]);
+
+  const [previewImg, setPreviewImg] = useState<string | null>(null);
+  useEffect(() => {
+    if (!selectedImg) {
+      setPreviewImg(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(selectedImg as any);
+    setPreviewImg(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedImg]);
 
@@ -183,7 +195,7 @@ export const MainView = () => {
       {activeLayout === LAYOUT.PHOTO ? (
         <PhotoView
           tags={tags}
-          selectedImg={selectedImg}
+          previewImg={previewImg}
           extractedDrawerOpen={extractedDrawerOpen}
           onImageChange={(result) => setSelectedImg(result)}
           setExtractedDrawerOpen={setExtractedDrawerOpen}
@@ -192,6 +204,7 @@ export const MainView = () => {
         <MapResultView
           geo={geo}
           view={view}
+          imageUrl={previewImg}
           drawLaz={drawLaz}
           lazFile={lazFile}
         />
