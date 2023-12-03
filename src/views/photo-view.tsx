@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { CameraAlt, Close, DocumentScanner } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import {
@@ -56,33 +56,19 @@ interface Tag {
 
 interface PhotoViewProps {
   tags: Record<string, Tag[] | Tag>;
-  selectedImg: string | null | undefined;
+  previewImg?: string | null;
   extractedDrawerOpen: boolean;
-  onImageChange: (value: string | null | undefined) => void;
+  onImageChange: (value: File | null | undefined) => void;
   setExtractedDrawerOpen: (value: boolean) => void;
 }
 
 export const PhotoView = ({
   tags,
-  selectedImg,
+  previewImg,
   extractedDrawerOpen,
   onImageChange,
   setExtractedDrawerOpen,
 }: PhotoViewProps) => {
-  const [previewImg, setPreviewImg] = useState<string | null | undefined>(
-    undefined
-  );
-  useEffect(() => {
-    if (!selectedImg) {
-      setPreviewImg(undefined);
-      return;
-    }
-    const objectUrl = URL.createObjectURL(selectedImg as any);
-    setPreviewImg(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedImg]);
-
   const toggleExtractedDrawer =
     (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
@@ -171,7 +157,7 @@ export const PhotoView = ({
             alignItems="center"
             sx={{ height: "100vh" }}
           >
-            {selectedImg && (
+            {previewImg && (
               <>
                 <ImageSrc style={{ backgroundImage: `url(${previewImg})` }} />
                 <ImageBackdrop className="MuiImageBackdrop-root" />
@@ -184,7 +170,7 @@ export const PhotoView = ({
                 variant="contained"
                 startIcon={<CameraAlt />}
               >
-                {selectedImg ? "Take again" : "Take a picture"}{" "}
+                {previewImg ? "Take again" : "Take a picture"}{" "}
                 <VisuallyHiddenInput
                   onChange={onImageChangeHandler}
                   type="file"
@@ -197,14 +183,14 @@ export const PhotoView = ({
                 variant="outlined"
                 startIcon={<CloudUploadIcon />}
               >
-                {selectedImg ? "Upload again" : "Upload image"}{" "}
+                {previewImg ? "Upload again" : "Upload image"}{" "}
                 <VisuallyHiddenInput
                   onChange={onImageChangeHandler}
                   type="file"
                   accept="image/*"
                 />
               </Button>
-              {selectedImg && tags && (
+              {previewImg && tags && (
                 <Button
                   component="label"
                   variant="outlined"

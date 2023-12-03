@@ -11,6 +11,7 @@ import {
   FirstPersonController,
   FirstPersonView,
   MapView,
+  PickingInfo,
 } from "@deck.gl/core/typed";
 import { DeckGL } from "@deck.gl/react/typed";
 import {
@@ -36,33 +37,10 @@ import { transformLazData } from "../utils/projection";
 import { load } from "@loaders.gl/core";
 import { NginxFile } from "../types/nginx";
 import { LAZ_FILES_LIST_URL } from "../constants";
-
-function onHover(info: any) {
-  const { x, y, object } = info;
-  const tooltipElement = document.getElementById("custom-tooltip");
-
-  if (object) {
-    const tooltipContent = `
-      <br>
-      <b>Altitude:</b> ${object.altitude.toFixed(2)}m
-      <br>
-      <b>Heading:</b> ${object.bearing.toFixed(2)}°
-      `;
-    const coordinates = info.coordinate;
-    while (Math.abs(info.viewport.longitude - coordinates[0]) > 180) {
-      coordinates[0] += info.viewport.longitude > coordinates[0] ? 360 : -360;
-    }
-
-    tooltipElement!.innerHTML = tooltipContent;
-    tooltipElement!.style.display = "block";
-    tooltipElement!.style.left = x + "px";
-    tooltipElement!.style.top = y + "px";
-    tooltipElement!.style.color = "black";
-    tooltipElement!.style.zIndex = "999";
-  } else {
-    tooltipElement!.style.display = "none";
-  }
-}
+import {
+  BuildingTooltip,
+  BuildingTooltipProps,
+} from "../components/building-tooltip";
 
 function onClick(info: any) {
   const tooltipElement = document.getElementById("custom-tooltip");
@@ -77,6 +55,7 @@ function onClick(info: any) {
 interface MapResultViewProps {
   geo: any;
   view: "firstPerson" | "map" | "orthographic";
+  imageUrl: string | null;
   drawLaz: boolean;
   lazFile: NginxFile | null;
 }
@@ -84,6 +63,7 @@ interface MapResultViewProps {
 export const MapResultView = ({
   geo,
   view,
+  imageUrl,
   drawLaz,
   lazFile,
 }: MapResultViewProps) => {
@@ -129,6 +109,23 @@ export const MapResultView = ({
     buildingHeight: inputs.floorHeight * inputs.floorNumber,
   });
 
+  const [buildingTooltipProps, setBuildingTooltipProps] =
+    useState<BuildingTooltipProps>({
+      show: false,
+      x: 0,
+      y: 0,
+      imageUrl: null,
+      altitude: 0,
+      heading: 0,
+    });
+
+  useEffect(() => {
+    setBuildingTooltipProps((prev) => ({
+      ...prev,
+      imageUrl,
+    }));
+  }, [imageUrl]);
+
   useEffect(() => {
     if (drawLaz && lazFile) {
       const drawLaz = async () => {
@@ -155,6 +152,30 @@ export const MapResultView = ({
   }, [drawLaz, lazFile, view]);
 
   const { lotCoverage, floorNumber, floorHeight } = inputs;
+
+  const onHoverHandler = (info: PickingInfo) => {
+    if (
+      info.layer?.id !== "exif-icon-kayer" &&
+      info.layer?.id !== "exif3d-camera-layer"
+    ) {
+      setBuildingTooltipProps((prev) => ({
+        ...prev,
+        show: false,
+      }));
+      return;
+    }
+    if (!info.picked) {
+      return;
+    }
+    setBuildingTooltipProps((prev) => ({
+      ...prev,
+      x: info.x,
+      y: info.y,
+      altitude: info.object?.altitude || 0,
+      heading: info.object?.bearing || 0,
+      show: true,
+    }));
+  };
 
   const createDefaultBuilding = (
     land: string,
@@ -205,6 +226,7 @@ export const MapResultView = ({
       getPosition: (d) => d.coordinates,
       getColor: (d) => [203, 24, 226],
       getOrientation: (d) => [0, -d.bearing, 90],
+      pickable: true,
       opacity: 1,
     });
 
@@ -223,7 +245,6 @@ export const MapResultView = ({
       sizeScale: 8,
       billboard: true,
       pickable: true,
-      onHover: onHover,
       onClick: onClick,
     });
 
@@ -416,9 +437,10 @@ export const MapResultView = ({
               theme.palette.mode === "light"
                 ? theme.palette.grey[100]
                 : theme.palette.grey[900],
-            flexGrow: 1,
+            position: "absolute",
             height: "100vh",
-            overflow: "auto",
+            width: "100vw",
+            overflow: "hidden",
           }}
         >
           <Toolbar />
@@ -436,6 +458,7 @@ export const MapResultView = ({
                 borderRadius: "5px",
               }}
             ></div>
+            <BuildingTooltip {...buildingTooltipProps} />
 
             <DeckGL
               viewState={
@@ -444,6 +467,7 @@ export const MapResultView = ({
                   : viewState.firstPersonView
               }
               onViewStateChange={onViewStateChangeHandler}
+              onHover={onHoverHandler}
               layers={layers}
               views={VIEWS}
               effects={[
