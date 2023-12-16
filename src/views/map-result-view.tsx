@@ -1,19 +1,7 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
+import { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 
-import {
-  Layer,
-  LightingEffect,
-  AmbientLight,
-  MapController,
-  FirstPersonController,
-  FirstPersonView,
-  MapView,
-  PickingInfo,
-} from "@deck.gl/core/typed";
-import { DeckGL } from "@deck.gl/react/typed";
+import { Layer, PickingInfo } from "@deck.gl/core/typed";
 import {
   GeoJsonLayer,
   PolygonLayer,
@@ -21,7 +9,6 @@ import {
   PointCloudLayer,
 } from "@deck.gl/layers/typed";
 import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
-import { TerrainLayer } from "@deck.gl/geo-layers/typed";
 import { LASLoader } from "@loaders.gl/las";
 
 import { FileContents } from "../types/file";
@@ -35,7 +22,6 @@ import { FeatureCollection } from "@turf/turf";
 import { BuildingAttributes } from "../components/building-attributes";
 import { UserInputs } from "../types/user-inputs";
 import { Metrics } from "../types/metrics";
-import { ViewStateChangeParameters } from "@deck.gl/core/typed/controllers/controller";
 import { transformLazData } from "../utils/projection";
 import { load } from "@loaders.gl/core";
 import { NginxFile } from "../types/nginx";
@@ -44,16 +30,9 @@ import {
   BuildingTooltip,
   BuildingTooltipProps,
 } from "../components/building-tooltip";
-
-function onClick(info: any) {
-  const tooltipElement = document.getElementById("custom-tooltip");
-  const coordinates = info.coordinate;
-
-  while (Math.abs(info.viewport.longitude - coordinates[0]) > 180) {
-    coordinates[0] += info.viewport.longitude > coordinates[0] ? 360 : -360;
-  }
-  tooltipElement!.style.display = "none";
-}
+import { MultiviewMapViewState } from "../types/map-view-state";
+import { DeckglWrapper } from "../components/deckgl-wrapper";
+import { MapWrapper } from "../components/styled-common";
 
 interface MapResultViewProps {
   geo: any;
@@ -80,10 +59,7 @@ export const MapResultView = ({
     coordinates: [[]],
   });
   const [layers, setLayers] = useState<Layer[]>([]);
-  const viewStateRef = useRef<{
-    mapView: Record<string, any>;
-    firstPersonView: Record<string, any>;
-  }>({
+  const [viewState, setViewState] = useState<MultiviewMapViewState>({
     mapView: {
       latitude: 46.203589,
       longitude: 6.1369,
@@ -100,10 +76,6 @@ export const MapResultView = ({
       bearing: 0,
     },
   });
-  const [viewState, setViewState] = useState<{
-    mapView: Record<string, any>;
-    firstPersonView: Record<string, any>;
-  }>(viewStateRef.current);
 
   const [metrics, setMetrics] = useState<Metrics>({
     landArea: 0,
@@ -248,52 +220,15 @@ export const MapResultView = ({
       sizeScale: 8,
       billboard: true,
       pickable: true,
-      onClick: onClick,
     });
 
-    const deckglTerrainLayer = new TerrainLayer({
-      id: "terrain",
-      maxZoom: 16,
-      elevationDecoder: {
-        rScaler: 6553.6,
-        gScaler: 25.6,
-        bScaler: 0.1,
-        offset: -10000,
-      },
-      loadOptions: {
-        terrain: {
-          tesselator: "martini",
-          skirtHeight: 50,
-        },
-      },
-      // Digital elevation model from https://www.usgs.gov/
-      elevationData:
-        "https://tiles.buildingshistory.co.uk/geoserver/gwc/service/tms/1.0.0/dem%3ARGB_Terrain@WebMercatorQuad@png/{z}/{x}/{y}.png?flipY=true",
-      texture:
-        "https://tiles.buildingshistory.co.uk/geoserver/gwc/service/tms/1.0.0/buildings%3AOutdoor_3857@WebMercatorQuad@png/{z}/{x}/{y}.png?flipY=true",
-      meshMaxError: 0.6,
-    });
     setLayers([
       ground,
       storey,
       exif3dCameraLayer,
       deckglMarkerLayer,
-      deckglTerrainLayer,
     ]);
   };
-
-  useEffect(() => {
-    if (view === "orthographic") {
-      viewStateRef.current = {
-        ...viewStateRef.current,
-        mapView: {
-          ...viewStateRef.current.mapView,
-          pitch: 0,
-        },
-      };
-      setViewState(viewStateRef.current);
-    }
-  }, [view]);
 
   useEffect(() => {
     handleFileRead(false);
@@ -337,24 +272,23 @@ export const MapResultView = ({
       polygonElevation,
       camera?.coordinates
     );
-    viewStateRef.current = {
+    setViewState({
       mapView: {
-        ...viewStateRef.current.mapView,
+        ...viewState.mapView,
         longitude,
         latitude,
         zoom: 17.5,
         position: [0, 0, polygonElevation],
       },
       firstPersonView: {
-        ...viewStateRef.current.firstPersonView,
+        ...viewState.firstPersonView,
         longitude: camera?.coordinates?.[0] || longitude,
         latitude: camera?.coordinates?.[1] || latitude,
         position: fpPosition,
         pitch: 0,
         bearing,
       },
-    };
-    setViewState(viewStateRef.current);
+    });
 
     setGeojsonFileContents(geojson);
     setMetrics({
@@ -370,126 +304,25 @@ export const MapResultView = ({
     }
   };
 
-  const onViewStateChangeHandler = (parameters: ViewStateChangeParameters) => {
-    const { viewState, oldViewState } = parameters;
-    const viewToCompare =
-      view === "firstPerson"
-        ? viewStateRef.current.firstPersonView
-        : viewStateRef.current.mapView;
-    if (
-      oldViewState?.longitude !== viewToCompare.longitude ||
-      oldViewState?.latitude !== viewToCompare.latitude
-    ) {
-      return;
-    }
-    if (view === "map" || view === "orthographic") {
-      viewStateRef.current = {
-        mapView: viewState,
-        firstPersonView: {
-          ...viewStateRef.current.firstPersonView,
-          longitude: viewState.longitude,
-          latitude: viewState.latitude,
-        },
-      };
-    } else {
-      viewStateRef.current = {
-        mapView: {
-          ...viewStateRef.current.mapView,
-          longitude: viewState.longitude,
-          latitude: viewState.latitude,
-        },
-        firstPersonView: viewState,
-      };
-    }
-    setViewState(viewStateRef.current);
-  };
-
-  const VIEWS = useMemo(
-    () =>
-      view === "map" || view === "orthographic"
-        ? [
-            new MapView({
-              id: "mapView",
-              controller: {
-                type: MapController,
-                touchRotate: true,
-                touchZoom: true,
-              },
-              farZMultiplier: 2.02,
-              orthographic: view === "orthographic",
-            }),
-          ]
-        : [
-            new FirstPersonView({
-              id: "firstPersonView",
-              controller: {
-                type: FirstPersonController,
-              },
-            }),
-          ],
-    [view]
-  );
-
   return (
     <>
-      <>
-        <BuildingAttributes
-          geojsonFileContents={geojsonFileContents}
-          metrics={metrics}
-          handleFileRead={handleFileRead}
-        />
-        <Box
-          component="main"
-          sx={{
-            backgroundColor: (theme) =>
-              theme.palette.mode === "light"
-                ? theme.palette.grey[100]
-                : theme.palette.grey[900],
-            position: "absolute",
-            height: "100vh",
-            width: "100vw",
-            overflow: "hidden",
-          }}
-        >
-          <Toolbar />
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <div
-              className="custom-tooltip"
-              id="custom-tooltip"
-              style={{
-                position: "absolute",
-                height: "max-content",
-                width: "max-content",
-                background: "white",
-                color: "white",
-                padding: "5px",
-                borderRadius: "5px",
-              }}
-            ></div>
-            <BuildingTooltip {...buildingTooltipProps} />
+      <BuildingAttributes
+        geojsonFileContents={geojsonFileContents}
+        metrics={metrics}
+        handleFileRead={handleFileRead}
+      />
+      <MapWrapper component="main">
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <BuildingTooltip {...buildingTooltipProps} />
 
-            <DeckGL
-              viewState={
-                view === "map" || view === "orthographic"
-                  ? viewState.mapView
-                  : viewState.firstPersonView
-              }
-              onViewStateChange={onViewStateChangeHandler}
-              onHover={onHoverHandler}
-              layers={layers}
-              views={VIEWS}
-              effects={[
-                new LightingEffect({
-                  ambientLight: new AmbientLight({
-                    color: [255, 255, 255],
-                    intensity: 3,
-                  }),
-                }),
-              ]}
-            ></DeckGL>
-          </Container>
-        </Box>
-      </>
+          <DeckglWrapper
+            parentViewState={viewState}
+            view={view}
+            layers={layers}
+            onHover={onHoverHandler}
+          />
+        </Container>
+      </MapWrapper>
     </>
   );
 };

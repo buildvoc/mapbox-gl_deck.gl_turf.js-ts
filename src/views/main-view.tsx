@@ -12,27 +12,21 @@ import { PhotoView } from "./photo-view";
 import { InfoButton } from "../components/info-button";
 import { NginxFile } from "../types/nginx";
 import { useKeyboard } from "../hooks/useKeyboard";
+import { MapShowcaseView } from "./map-showcase-view";
+import { LAYOUT } from "../types/layout";
 
 const API_URL = "https://api.buildingshistory.co.uk";
-
-enum LAYOUT {
-  PHOTO,
-  RESULT,
-}
 
 export const MainView = () => {
   const [activeLayout, setActiveLayout] = React.useState(LAYOUT.PHOTO);
   const ref = React.useRef<HTMLDivElement>(null);
-
   const [selectedImg, setSelectedImg] = useState<File | null | undefined>(
     undefined
   );
-
   const [view, setView] = useState<"firstPerson" | "map" | "orthographic">(
     "firstPerson"
   );
   useKeyboard(setView);
-
   const [lazFile, setLazFile] = useState<null | NginxFile>(null);
   const [drawLaz, setDrawLaz] = useState<boolean>(false);
 
@@ -192,15 +186,17 @@ export const MainView = () => {
   return (
     <Box sx={{ display: "flex", height: "100vh" }} ref={ref}>
       <CssBaseline />
-      {activeLayout === LAYOUT.PHOTO ? (
+      {activeLayout === LAYOUT.PHOTO && (
         <PhotoView
           tags={tags}
           previewImg={previewImg}
           extractedDrawerOpen={extractedDrawerOpen}
           onImageChange={(result) => setSelectedImg(result)}
+          onShowcaseClick={() => setActiveLayout(LAYOUT.SHOWCASE)}
           setExtractedDrawerOpen={setExtractedDrawerOpen}
         />
-      ) : (
+      )}
+      {activeLayout === LAYOUT.RESULT && (
         <MapResultView
           geo={geo}
           view={view}
@@ -209,9 +205,10 @@ export const MainView = () => {
           lazFile={lazFile}
         />
       )}
+      {activeLayout === LAYOUT.SHOWCASE && <MapShowcaseView view={view} />}
 
       <BottomNav
-        value={activeLayout}
+        layout={activeLayout}
         view={view}
         lazFile={lazFile}
         onChange={onLayoutChange}

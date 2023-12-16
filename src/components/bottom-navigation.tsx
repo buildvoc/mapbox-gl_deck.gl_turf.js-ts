@@ -16,9 +16,10 @@ import { useEffect, useState } from "react";
 import { NginxFile } from "../types/nginx";
 import { LAZ_FILES_LIST_URL } from "../constants";
 import { MapViewSelect } from "./map-view-select";
+import { LAYOUT } from "../types/layout";
 
 interface BottomNavProps {
-  value: number;
+  layout: LAYOUT;
   view: "firstPerson" | "map" | "orthographic";
   lazFile: NginxFile | null;
   onChange: (newValue: number) => void;
@@ -28,7 +29,7 @@ interface BottomNavProps {
 }
 
 export const BottomNav = ({
-  value,
+  layout,
   view,
   lazFile,
   onChange,
@@ -56,7 +57,7 @@ export const BottomNav = ({
 
   return (
     <>
-      {value === 1 && (
+      {layout === LAYOUT.RESULT && (
         <Box
           sx={{
             display: "flex",
@@ -99,13 +100,15 @@ export const BottomNav = ({
       >
         <BottomNavigation
           showLabels
-          value={value}
+          value={layout}
           onChange={(event, newValue) => onChange(newValue)}
         >
           <BottomNavigationAction label="Capture" icon={<CameraAlt />} />
           <BottomNavigationAction label="Result" icon={<PinDrop />} />
         </BottomNavigation>
-        {value === 1 && <MapViewSelect view={view} onViewSet={onViewSet} />}
+        {(layout === LAYOUT.RESULT || layout === LAYOUT.SHOWCASE) && (
+          <MapViewSelect view={view} onViewSet={onViewSet} />
+        )}
       </Paper>
     </>
   );

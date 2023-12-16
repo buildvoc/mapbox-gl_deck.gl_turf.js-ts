@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { CameraAlt, Close, DocumentScanner } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CollectionsIcon from "@mui/icons-material/Collections";
 import {
   Box,
   Button,
@@ -60,6 +61,7 @@ interface PhotoViewProps {
   extractedDrawerOpen: boolean;
   onImageChange: (value: File | null | undefined) => void;
   setExtractedDrawerOpen: (value: boolean) => void;
+  onShowcaseClick: () => void;
 }
 
 export const PhotoView = ({
@@ -68,6 +70,7 @@ export const PhotoView = ({
   extractedDrawerOpen,
   onImageChange,
   setExtractedDrawerOpen,
+  onShowcaseClick,
 }: PhotoViewProps) => {
   const toggleExtractedDrawer =
     (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -189,6 +192,14 @@ export const PhotoView = ({
                   type="file"
                   accept="image/*"
                 />
+              </Button>
+              <Button
+                component="label"
+                variant="outlined"
+                startIcon={<CollectionsIcon />}
+                onClick={onShowcaseClick}
+              >
+                Showcase
               </Button>
               {previewImg && tags && (
                 <Button
