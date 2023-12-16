@@ -32,7 +32,7 @@ export const BuildingTooltip: FC<BuildingTooltipProps> = ({
       sx={{
         position: "absolute",
         left: `${x}px`,
-        top: `${y}px`,
+        bottom: `${window.innerHeight - y}px`,
         zIndex: 2,
         padding: "5px",
       }}

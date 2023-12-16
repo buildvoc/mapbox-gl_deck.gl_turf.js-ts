@@ -1,3 +1,4 @@
+import { toRadians } from "@math.gl/core";
 import { polygon, area, centerOfMass } from "@turf/turf";
 
 const round = (number: number): number => {
@@ -23,4 +24,18 @@ export const computeGeoMatrics = (
   const center = centerOfMass(areaPolygon);
 
   return { center, landArea, buildingArea, volume, buildingHeight };
+};
+
+export const getOffsetBehindCamera = (
+  bearing: number,
+  polygonElevation: number,
+  cameraCoordinates?: number[]
+) => {
+  if (!cameraCoordinates) {
+    return [0, 0, polygonElevation + 3];
+  }
+  const radBearing = toRadians(bearing);
+  const yOffset = -5 * Math.sin(radBearing);
+  const xOffset = -5 * Math.cos(radBearing);
+  return [yOffset, xOffset, cameraCoordinates[2] + 3];
 };

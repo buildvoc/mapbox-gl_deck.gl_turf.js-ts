@@ -25,7 +25,10 @@ import { TerrainLayer } from "@deck.gl/geo-layers/typed";
 import { LASLoader } from "@loaders.gl/las";
 
 import { FileContents } from "../types/file";
-import { computeGeoMatrics } from "../utils/geo-operations";
+import {
+  computeGeoMatrics,
+  getOffsetBehindCamera,
+} from "../utils/geo-operations";
 
 import heritageTrail from "../data/heritage-trail";
 import { FeatureCollection } from "@turf/turf";
@@ -329,6 +332,11 @@ export const MapResultView = ({
       geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
     const camera = geo?.cameraGPSData?.[0];
     const bearing = camera?.bearing ? camera?.bearing : 0;
+    const fpPosition = getOffsetBehindCamera(
+      bearing,
+      polygonElevation,
+      camera?.coordinates
+    );
     viewStateRef.current = {
       mapView: {
         ...viewStateRef.current.mapView,
@@ -341,7 +349,7 @@ export const MapResultView = ({
         ...viewStateRef.current.firstPersonView,
         longitude: camera?.coordinates?.[0] || longitude,
         latitude: camera?.coordinates?.[1] || latitude,
-        position: [0, 0, camera?.coordinates?.[2] + 3 || polygonElevation + 3],
+        position: fpPosition,
         pitch: 0,
         bearing,
       },
