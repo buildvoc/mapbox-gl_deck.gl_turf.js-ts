@@ -60,8 +60,8 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
               },
             ],
             getIcon: () => "marker",
-            iconAtlas:
-              "https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png",
+            iconAtlas: `https://buildingshistory.co.uk/galleries/${image.thumbnail_filename}`,
+            // "https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png",
             iconMapping: {
               marker: { x: 0, y: 0, width: 128, height: 128, mask: true },
             },
