@@ -7,6 +7,7 @@ import { fetchGallery } from "../api/fetch-gallery";
 import { IconLayer } from "@deck.gl/layers/typed";
 import { fetchBuilding } from "../api/fetch-building";
 import { createBuilding } from "../utils/deckgl-utils";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 interface MapShowcaseViewProps {
   view: "firstPerson" | "map" | "orthographic";
@@ -15,6 +16,7 @@ interface MapShowcaseViewProps {
 export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
   const [galleryData, setGalleryData] = useState<Gallery | null>(null);
   const [buildingLayers, setBuldingLayer] = useState<Layer[]>([]);
+  const [buildingsLoading, setBuildingsLoading] = useState<boolean>(false);
 
   const onHoverHandler = (info: PickingInfo) => {
     if (
@@ -117,7 +119,9 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
         }
       }
       setBuldingLayer(newLayers);
+      setBuildingsLoading(false);
     };
+    setBuildingsLoading(true);
     renderBuildingAsync(galleryData.data.images.data);
   }, [galleryData]);
 
@@ -127,6 +131,12 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
 
   return (
     <MapWrapper component="main">
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={buildingsLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <DeckglWrapper
         parentViewState={null}
         view={view}
