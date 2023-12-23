@@ -14,8 +14,7 @@ import { NginxFile } from "../types/nginx";
 import { useKeyboard } from "../hooks/useKeyboard";
 import { MapShowcaseView } from "./map-showcase-view";
 import { LAYOUT } from "../types/layout";
-
-const API_URL = "https://api.buildingshistory.co.uk";
+import { fetchBuilding } from "../api/fetch-building";
 
 export const MainView = () => {
   const [activeLayout, setActiveLayout] = React.useState(LAYOUT.PHOTO);
@@ -113,37 +112,15 @@ export const MainView = () => {
     lat: string,
     lon: string,
     camAltitude: string,
-    camHeight: string
+    camDirection: string
   ) => {
     try {
       setLoading(true);
       setErrMsg(null);
-      let lng = parseFloat(lon);
-      if (lng > 0) lng = -Math.abs(parseFloat(lon));
-
-      const response = await fetch(
-        // prettier-ignore
-        `${API_URL}/api/v1/building-part/nearest?latitude=${parseFloat(lat)}&longitude=${lng}&imagedirection=${camHeight}`
-      );
-      const data = await response.json();
-
-      if (
-        data.data.building_part.length > 0 &&
-        data.data.building_part[0].geojson
-      ) {
-        setGeo({
-          geojson: data.data.building_part[0].geojson,
-          cameraGPSData: [
-            {
-              coordinates: [lng, parseFloat(lat), parseFloat(camAltitude)],
-              bearing: parseFloat(camHeight),
-              altitude: parseFloat(camAltitude),
-            },
-          ],
-        });
+      const data = await fetchBuilding(lat, lon, camAltitude, camDirection);
+      if (data) {
+        setGeo(data);
         setActiveLayout(LAYOUT.RESULT);
-      } else {
-        alert("No records found in our database");
       }
       setLoading(false);
     } catch (error: any) {
