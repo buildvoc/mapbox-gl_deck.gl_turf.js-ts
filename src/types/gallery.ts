@@ -1,4 +1,4 @@
-interface GalleryImage {
+export interface GalleryImage {
   id: number;
   gallery_id: string;
   filename: string;

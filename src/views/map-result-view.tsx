@@ -2,13 +2,7 @@ import { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 
 import { Layer, PickingInfo } from "@deck.gl/core/typed";
-import {
-  GeoJsonLayer,
-  PolygonLayer,
-  IconLayer,
-  PointCloudLayer,
-} from "@deck.gl/layers/typed";
-import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
+import { PointCloudLayer } from "@deck.gl/layers/typed";
 import { LASLoader } from "@loaders.gl/las";
 
 import { FileContents } from "../types/file";
@@ -18,7 +12,6 @@ import {
 } from "../utils/geo-operations";
 
 import heritageTrail from "../data/heritage-trail";
-import { FeatureCollection } from "@turf/turf";
 import { BuildingAttributes } from "../components/building-attributes";
 import { UserInputs } from "../types/user-inputs";
 import { Metrics } from "../types/metrics";
@@ -33,6 +26,7 @@ import {
 import { MultiviewMapViewState } from "../types/map-view-state";
 import { DeckglWrapper } from "../components/deckgl-wrapper";
 import { MapWrapper } from "../components/styled-common";
+import { createBuilding } from "../utils/deckgl-utils";
 
 interface MapResultViewProps {
   geo: any;
@@ -152,84 +146,6 @@ export const MapResultView = ({
     }));
   };
 
-  const createDefaultBuilding = (
-    land: string,
-    building: FeatureCollection,
-    buildingHeight: number,
-    cameraGPSData: any
-  ): void => {
-    const ground = new GeoJsonLayer({
-      id: "geojson-ground-layer",
-      data: land,
-      getLineColor: [0, 0, 0, 255],
-      getFillColor: [183, 244, 216, 255],
-      getLineWidth: () => 0.3,
-      opacity: 1,
-    });
-
-    const buildingDataCopy = [
-      ...(building.features[0].geometry as any).coordinates,
-    ];
-    let buildingCoords = buildingDataCopy[0].map((item: any) => {
-      item.push(building.features[0].properties!.absoluteheightminimum);
-      return item;
-    });
-    const polygonData = [
-      {
-        contour: buildingCoords,
-      },
-    ];
-
-    const storey = new PolygonLayer({
-      id: "geojson-storey-building",
-      data: polygonData,
-      extruded: true,
-      wireframe: true,
-      getPolygon: (d) => {
-        return d.contour;
-      },
-      getFillColor: [249, 180, 45, 255],
-      getLineColor: [0, 0, 0, 255],
-      getElevation: buildingHeight,
-      opacity: 1,
-    });
-    const url = "./cam.gltf";
-    const exif3dCameraLayer = new ScenegraphLayer({
-      id: "exif3d-camera-layer",
-      data: cameraGPSData,
-      scenegraph: url,
-      getPosition: (d) => d.coordinates,
-      getColor: (d) => [203, 24, 226],
-      getOrientation: (d) => [0, -d.bearing, 90],
-      pickable: true,
-      opacity: 1,
-    });
-
-    const deckglMarkerLayer = new IconLayer({
-      id: "exif-icon-kayer",
-      data: cameraGPSData,
-      getIcon: () => "marker",
-      iconAtlas:
-        "https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png",
-      iconMapping: {
-        marker: { x: 0, y: 0, width: 128, height: 128, mask: true },
-      },
-      getPosition: (d) => d.coordinates,
-      getColor: (d) => [Math.sqrt(d.exits), 140, 0],
-      getSize: () => 5,
-      sizeScale: 8,
-      billboard: true,
-      pickable: true,
-    });
-
-    setLayers([
-      ground,
-      storey,
-      exif3dCameraLayer,
-      deckglMarkerLayer,
-    ]);
-  };
-
   useEffect(() => {
     handleFileRead(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -257,12 +173,8 @@ export const MapResultView = ({
       },
     } = center;
 
-    createDefaultBuilding(
-      geojson,
-      geojson,
-      parseFloat(geojson.features[0].properties.relativeheightmaximum),
-      geo.cameraGPSData
-    );
+    const buildingLayers = createBuilding(geojson, geo.cameraGPSData);
+    setLayers(buildingLayers);
     const polygonElevation =
       geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
     const camera = geo?.cameraGPSData?.[0];
