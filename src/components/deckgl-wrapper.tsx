@@ -68,7 +68,7 @@ export const DeckglWrapper = ({
   useEffect(() => {
     const deckglTerrainLayer = new TerrainLayer({
       id: "terrain",
-      maxZoom: 16,
+      maxZoom: 21,
       elevationDecoder: {
         rScaler: 6553.6,
         gScaler: 25.6,
