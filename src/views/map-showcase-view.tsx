@@ -56,34 +56,32 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
       return result;
     }
 
-    for (const image of images) {
-      result.push(
-        new IconLayer({
-          id: `gallery-image-${image.filename}`,
-          data: [
-            {
-              coordinates: [
-                parseFloat(image.exif_data_longitude),
-                parseFloat(image.exif_data_latitude),
-                parseFloat(image.exif_data_altitude) + 10,
-              ],
-            },
-          ],
-          getIcon: () => "marker",
-          iconAtlas: `https://buildingshistory.co.uk/galleries/${image.thumbnail_filename}`,
-          // "https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png",
-          iconMapping: {
-            marker: { x: 0, y: 0, width: 128, height: 128, mask: true },
-          },
-          getPosition: (d) => d.coordinates,
-          getColor: [0, 140, 0],
-          getSize: () => 5,
-          sizeScale: 8,
-          billboard: true,
-          pickable: true,
-        })
-      );
-    }
+    result.push(
+      new IconLayer({
+        id: `gallery-images`,
+        data: images,
+        getIcon: (d) => {
+          return {
+            url: `https://buildingshistory.co.uk/galleries/${d.thumbnail_filename}`,
+            height: 240,
+            width: 180,
+            id: d.id,
+            mask: false,
+          };
+        },
+
+        getPosition: (d) => [
+          parseFloat(d.exif_data_longitude),
+          parseFloat(d.exif_data_latitude),
+          parseFloat(d.exif_data_altitude) + 10,
+        ],
+        getSize: () => 5,
+        sizeScale: 8,
+        billboard: true,
+        pickable: true,
+      })
+    );
+
     return result;
   }, [galleryData]);
 
