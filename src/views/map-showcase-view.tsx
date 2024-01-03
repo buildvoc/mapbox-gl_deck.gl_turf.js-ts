@@ -8,6 +8,10 @@ import { IconLayer } from "@deck.gl/layers/typed";
 import { fetchBuilding } from "../api/fetch-building";
 import { createBuilding } from "../utils/deckgl-utils";
 import { Backdrop, CircularProgress } from "@mui/material";
+import {
+  ShowcaseTooltip,
+  ShowcaseTooltipProps,
+} from "../components/showcase-tooltip";
 
 interface MapShowcaseViewProps {
   view: "firstPerson" | "map" | "orthographic";
@@ -18,28 +22,42 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
   const [buildingLayers, setBuldingLayer] = useState<Layer[]>([]);
   const [buildingsLoading, setBuildingsLoading] = useState<boolean>(false);
 
+  const [showcaseTooltipProps, setShowcaseTooltipProps] =
+    useState<ShowcaseTooltipProps>({
+      show: false,
+      x: 0,
+      y: 0,
+      imageUrl: null,
+      longitude: "",
+      latitude: "",
+      name: "",
+      address: "",
+      date: "",
+    });
+
   const onHoverHandler = (info: PickingInfo) => {
-    if (
-      info.layer?.id !== "exif-icon-kayer" &&
-      info.layer?.id !== "exif3d-camera-layer"
-    ) {
-      // setBuildingTooltipProps((prev) => ({
-      //   ...prev,
-      //   show: false,
-      // }));
+    if (info.layer?.id !== "gallery-images") {
+      setShowcaseTooltipProps((prev) => ({
+        ...prev,
+        show: false,
+      }));
       return;
     }
     if (!info.picked) {
       return;
     }
-    // setBuildingTooltipProps((prev) => ({
-    //   ...prev,
-    //   x: info.x,
-    //   y: info.y,
-    //   altitude: info.object?.altitude || 0,
-    //   heading: info.object?.bearing || 0,
-    //   show: true,
-    // }));
+    setShowcaseTooltipProps((prev) => ({
+      ...prev,
+      x: info.x,
+      y: info.y,
+      longitude: info.object?.["exif_data_longitude"],
+      latitude: info.object?.["exif_data_latitude"],
+      name: info.object?.["description"],
+      address: info.object?.["long_description"],
+      date: info.object?.["exif_data_taken_at"],
+      imageUrl: `https://buildingshistory.co.uk/galleries/${info.object?.["thumbnail_filename"]}`,
+      show: true,
+    }));
   };
 
   useEffect(() => {
@@ -135,6 +153,7 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
+      <ShowcaseTooltip {...showcaseTooltipProps} />
       <DeckglWrapper
         parentViewState={null}
         view={view}
