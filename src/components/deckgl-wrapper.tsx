@@ -53,15 +53,26 @@ export const DeckglWrapper = ({
   }, [parentViewState]);
 
   useEffect(() => {
+    let newPitch = viewState.mapView.pitch;
+    let newMaxPitch = viewState.mapView.maxPitch;
     if (view === "orthographic") {
-      setViewState({
-        ...viewState,
-        mapView: {
-          ...viewState.mapView,
-          pitch: 0,
-        },
-      });
+      newPitch = 0;
+      newMaxPitch = 60;
+    } else if (view === "map") {
+      newMaxPitch = 85;
+    } else if (view === "firstPerson") {
+      newPitch = viewState.firstPersonView.pitch;
+      newMaxPitch = 89;
     }
+
+    setViewState({
+      ...viewState,
+      mapView: {
+        ...viewState.mapView,
+        pitch: newPitch,
+        maxPitch: newMaxPitch,
+      },
+    });
     // eslint-disable-next-line
   }, [view]);
 
@@ -97,7 +108,10 @@ export const DeckglWrapper = ({
     let newViewState;
     if (view === "map" || view === "orthographic") {
       newViewState = {
-        mapView: deckViewState,
+        mapView: {
+          ...deckViewState,
+          maxPitch: view === "orthographic" ? 60 : 85
+        },
         firstPersonView: {
           ...viewState.firstPersonView,
           longitude: deckViewState.longitude,
@@ -129,6 +143,7 @@ export const DeckglWrapper = ({
                 touchZoom: true,
               },
               farZMultiplier: 2.02,
+              altitude: 10,
               orthographic: view === "orthographic",
             }),
           ]
