@@ -65,7 +65,7 @@ export const createBuilding = (
   });
 
   const deckglMarkerLayer = new IconLayer({
-    id: nameSuffix ? `exif-icon-kayer-${nameSuffix}` : "exif-icon-kayer",
+    id: nameSuffix ? `exif-icon-kayer-${nameSuffix}` : "exif-icon-layer",
     data: cameraGPSData,
     getIcon: () => "marker",
     iconAtlas:

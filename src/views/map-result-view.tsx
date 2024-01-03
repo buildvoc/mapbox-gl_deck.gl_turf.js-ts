@@ -124,7 +124,7 @@ export const MapResultView = ({
 
   const onHoverHandler = (info: PickingInfo) => {
     if (
-      info.layer?.id !== "exif-icon-kayer" &&
+      info.layer?.id !== "exif-icon-layer" &&
       info.layer?.id !== "exif3d-camera-layer"
     ) {
       setBuildingTooltipProps((prev) => ({
