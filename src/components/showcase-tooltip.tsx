@@ -38,7 +38,7 @@ export const ShowcaseTooltip: FC<ShowcaseTooltipProps> = ({
   date,
 }: ShowcaseTooltipProps) => {
   const numberLatitude = useMemo(() => parseFloat(latitude), [latitude]);
-  const numberLongitude = useMemo(() => parseFloat(latitude), [latitude]);
+  const numberLongitude = useMemo(() => parseFloat(longitude), [longitude]);
 
   if (!show || !imageUrl) {
     return null;
