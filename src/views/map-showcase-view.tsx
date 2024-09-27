@@ -3,7 +3,11 @@ import { DeckglWrapper } from "../components/deckgl-wrapper";
 import { Layer, PickingInfo } from "@deck.gl/core/typed";
 import { useEffect, useMemo, useState } from "react";
 import { Gallery, GalleryImage } from "../types/gallery";
-import { fetchGallery } from "../api/fetch-gallery";
+import {
+  fetchGallery,
+  get_unassigned_photos,
+  get_photo,
+} from "../api/fetch-gallery";
 import { IconLayer } from "@deck.gl/layers/typed";
 import { fetchBuilding } from "../api/fetch-building";
 import { createBuilding } from "../utils/deckgl-utils";
@@ -12,7 +16,6 @@ import {
   ShowcaseTooltip,
   ShowcaseTooltipProps,
 } from "../components/showcase-tooltip";
-
 interface MapShowcaseViewProps {
   view: "firstPerson" | "map" | "orthographic";
 }
@@ -20,8 +23,9 @@ interface MapShowcaseViewProps {
 export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
   const [galleryData, setGalleryData] = useState<Gallery | null>(null);
   const [buildingLayers, setBuldingLayer] = useState<Layer[]>([]);
-  const [buildingsLoading, setBuildingsLoading] = useState<boolean>(false);
-
+  const [buildingsLoading, setBuildingsLoading] = useState<boolean>(true);
+  //local sotrage
+  const [galleryDataForBuilding, setGalleryDataForBuilding] = useState<Gallery | null>(null);
   const [showcaseTooltipProps, setShowcaseTooltipProps] =
     useState<ShowcaseTooltipProps>({
       show: false,
@@ -55,14 +59,56 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
       name: info.object?.["description"],
       address: info.object?.["long_description"],
       date: info.object?.["exif_data_taken_at"],
-      imageUrl: `https://buildingshistory.co.uk/galleries/${info.object?.["thumbnail_filename"]}`,
+      imageUrl: info.object?.["photo"]
+        ? info.object?.["photo"]
+        : `https://buildingshistory.co.uk/galleries/${info.object?.["thumbnail_filename"]}`,
       show: true,
     }));
   };
 
   useEffect(() => {
+    const fetchData = async (response: any) => {
+      setBuildingsLoading(true);
+
+      var task_photo_data;
+      var map_unassigned_array = [];
+      let photos_ids = await get_unassigned_photos(3);
+      for (let id of photos_ids) {
+        const result = await get_photo(id);
+
+        // photos_array.push(result)
+        if (result.photo.length > 0) {
+          task_photo_data = {
+            id: parseInt(id),
+            exif_data_latitude: result?.lat,
+            exif_data_longitude: result?.lng,
+            photo: `data:image/jpeg;base64,${result.photo}`,
+            creted_at: result.created,
+            long_description: result.note,
+            exif_data_gps_img_direction: result.photo_heading,
+          };
+          map_unassigned_array.push(task_photo_data);
+        }
+      }
+      // setPhotoGallery(map_unassigned_array)
+      const modifiedResponse = response;
+      modifiedResponse.data.images.data.push(...map_unassigned_array);
+      setBuildingsLoading(false);
+      setGalleryData(modifiedResponse);
+    };
+
+    fetchData({
+      data: {
+        images: {
+          data: [],
+        },
+      },
+    });
+  }, []);
+
+  useEffect(() => {
     fetchGallery().then((result) => {
-      setGalleryData(result);
+      setGalleryDataForBuilding(result)
     });
   }, []);
 
@@ -79,8 +125,12 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
         id: `gallery-images`,
         data: images,
         getIcon: (d) => {
+          console.log("Images---", images);
           return {
-            url: `https://buildingshistory.co.uk/galleries/${d.thumbnail_filename}`,
+            url:
+              d.photo === undefined
+                ? `https://buildingshistory.co.uk/galleries/${d.thumbnail_filename}`
+                : d.photo,
             height: 240,
             width: 180,
             id: d.id,
@@ -91,7 +141,7 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
         getPosition: (d) => [
           parseFloat(d.exif_data_longitude),
           parseFloat(d.exif_data_latitude),
-          parseFloat(d.exif_data_altitude) + 10,
+          parseFloat("51.215488888889") + 20,
         ],
         getSize: () => 5,
         sizeScale: 8,
@@ -100,25 +150,31 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
       })
     );
 
+    //Here is the result which show image on map
+    //   console.log("Gallery Image ---",result)
+    // console.log()
+
     return result;
   }, [galleryData]);
 
   useEffect(() => {
-    if (!galleryData) {
+    if (!galleryDataForBuilding) {
       return;
     }
 
     const renderBuildingAsync = async (images: GalleryImage[]) => {
       const promises = [];
       for (const image of images) {
-        promises.push(
-          fetchBuilding(
-            image.exif_data_latitude,
-            image.exif_data_longitude,
-            image.exif_data_altitude,
-            image.exif_data_gps_img_direction
-          )
-        );
+        if (image.photo === undefined) {
+          promises.push(
+            fetchBuilding(
+              image.exif_data_latitude,
+              image.exif_data_longitude,
+              image.exif_data_altitude,
+              image.exif_data_gps_img_direction
+            )
+          );
+        }
       }
       const buildings = await Promise.all(promises);
       let newLayers: Layer[] = [];
@@ -137,9 +193,8 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
       setBuldingLayer(newLayers);
       setBuildingsLoading(false);
     };
-    setBuildingsLoading(true);
-    renderBuildingAsync(galleryData.data.images.data);
-  }, [galleryData]);
+    renderBuildingAsync(galleryDataForBuilding.data.images.data);
+  }, [galleryDataForBuilding]);
 
   const layers = useMemo(() => {
     return [...buildingLayers, ...imageLayers];

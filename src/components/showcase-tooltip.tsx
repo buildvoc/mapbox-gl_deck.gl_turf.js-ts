@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Paper, Stack, Typography, styled as styledMui } from "@mui/material";
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo } from "react";
 import moment from "moment";
 import MapIcon from "@mui/icons-material/Map";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -39,10 +39,15 @@ export const ShowcaseTooltip: FC<ShowcaseTooltipProps> = ({
 }: ShowcaseTooltipProps) => {
   const numberLatitude = useMemo(() => parseFloat(latitude), [latitude]);
   const numberLongitude = useMemo(() => parseFloat(longitude), [longitude]);
+  useEffect(()=>{
+    console.log("Image url---",imageUrl)
+  },[])
+
 
   if (!show || !imageUrl) {
     return null;
   }
+
 
   return (
     <Paper

@@ -225,7 +225,7 @@ export const MapResultView = ({
       />
       <MapWrapper component="main">
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <BuildingTooltip {...buildingTooltipProps} />
+          {/* <BuildingTooltip {...buildingTooltipProps} /> */}
 
           <DeckglWrapper
             parentViewState={viewState}

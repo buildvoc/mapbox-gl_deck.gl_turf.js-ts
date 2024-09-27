@@ -26,6 +26,7 @@ export interface GalleryImage {
   exif_data_gps_longitude_ref: string;
   exif_data_gps_latitude_ref: string;
   exif_data_focal_length_in35mm_film: string;
+  photo:string;
 }
 
 export interface Gallery {
