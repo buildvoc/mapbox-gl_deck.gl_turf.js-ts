@@ -6,6 +6,9 @@ export const fetchBuilding = async (
   camAltitude: string,
   camDirection: string
 ) => {
+
+  console.log(`Lat: ${lat} Long: ${lon} camAltitude: ${camAltitude} camDirection: ${camDirection}`)
+
   let lng = parseFloat(lon);
   if (lng > 0) lng = -Math.abs(parseFloat(lon));
 

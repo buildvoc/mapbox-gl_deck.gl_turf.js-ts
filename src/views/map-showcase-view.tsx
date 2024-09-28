@@ -4,7 +4,6 @@ import { Layer, PickingInfo } from "@deck.gl/core/typed";
 import { useEffect, useMemo, useState } from "react";
 import { Gallery, GalleryImage } from "../types/gallery";
 import {
-  fetchGallery,
   get_unassigned_photos,
   get_photo,
 } from "../api/fetch-gallery";
@@ -85,6 +84,7 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
             photo: `data:image/jpeg;base64,${result.photo}`,
             creted_at: result.created,
             long_description: result.note,
+            exif_data_altitude:"51.215488888889",
             exif_data_gps_img_direction: result.photo_heading,
           };
           map_unassigned_array.push(task_photo_data);
@@ -106,11 +106,6 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
     });
   }, []);
 
-  useEffect(() => {
-    fetchGallery().then((result) => {
-      setGalleryDataForBuilding(result)
-    });
-  }, []);
 
   const imageLayers: Layer[] = useMemo(() => {
     const result: Layer[] = [];
@@ -125,7 +120,6 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
         id: `gallery-images`,
         data: images,
         getIcon: (d) => {
-          console.log("Images---", images);
           return {
             url:
               d.photo === undefined
@@ -141,7 +135,7 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
         getPosition: (d) => [
           parseFloat(d.exif_data_longitude),
           parseFloat(d.exif_data_latitude),
-          parseFloat("51.215488888889") + 20,
+          parseFloat(d.exif_data_altitude) + 20,
         ],
         getSize: () => 5,
         sizeScale: 8,
@@ -158,25 +152,25 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
   }, [galleryData]);
 
   useEffect(() => {
-    if (!galleryDataForBuilding) {
+    if (!galleryData) {
       return;
     }
 
     const renderBuildingAsync = async (images: GalleryImage[]) => {
       const promises = [];
       for (const image of images) {
-        if (image.photo === undefined) {
+     
           promises.push(
             fetchBuilding(
               image.exif_data_latitude,
               image.exif_data_longitude,
-              image.exif_data_altitude,
+              "10",
               image.exif_data_gps_img_direction
             )
           );
-        }
       }
       const buildings = await Promise.all(promises);
+
       let newLayers: Layer[] = [];
       for (let i = 0; i < buildings.length; i++) {
         const buildingData = buildings[i];
@@ -193,8 +187,12 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
       setBuldingLayer(newLayers);
       setBuildingsLoading(false);
     };
-    renderBuildingAsync(galleryDataForBuilding.data.images.data);
-  }, [galleryDataForBuilding]);
+    if(galleryData)
+    {
+      renderBuildingAsync(galleryData.data.images.data);
+
+    }
+  }, [galleryData]);
 
   const layers = useMemo(() => {
     return [...buildingLayers, ...imageLayers];
