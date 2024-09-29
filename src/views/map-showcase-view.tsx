@@ -82,9 +82,9 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
             exif_data_latitude: result?.lat,
             exif_data_longitude: result?.lng,
             photo: `data:image/jpeg;base64,${result.photo}`,
-            creted_at: result.created,
+            exif_data_taken_at: result.created,
             long_description: result.note,
-            exif_data_altitude:"51.215488888889",
+            exif_data_altitude:"100",
             exif_data_gps_img_direction: result.photo_heading,
           };
           map_unassigned_array.push(task_photo_data);
@@ -135,7 +135,7 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
         getPosition: (d) => [
           parseFloat(d.exif_data_longitude),
           parseFloat(d.exif_data_latitude),
-          parseFloat(d.exif_data_altitude) + 20,
+          parseFloat(d.exif_data_altitude) + 10,
         ],
         getSize: () => 5,
         sizeScale: 8,
@@ -164,7 +164,7 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
             fetchBuilding(
               image.exif_data_latitude,
               image.exif_data_longitude,
-              "10",
+              image.exif_data_altitude,
               image.exif_data_gps_img_direction
             )
           );
