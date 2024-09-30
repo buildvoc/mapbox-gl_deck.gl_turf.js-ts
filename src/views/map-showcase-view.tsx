@@ -84,7 +84,7 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
             photo: `data:image/jpeg;base64,${result.photo}`,
             exif_data_taken_at: result.created,
             long_description: result.note,
-            exif_data_altitude:"100",
+            exif_data_altitude:result.alt,
             exif_data_gps_img_direction: result.photo_heading,
           };
           map_unassigned_array.push(task_photo_data);
@@ -120,11 +120,9 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
         id: `gallery-images`,
         data: images,
         getIcon: (d) => {
+          console.log("Photo data---",d)
           return {
-            url:
-              d.photo === undefined
-                ? `https://buildingshistory.co.uk/galleries/${d.thumbnail_filename}`
-                : d.photo,
+            url: d.photo,
             height: 240,
             width: 180,
             id: d.id,
