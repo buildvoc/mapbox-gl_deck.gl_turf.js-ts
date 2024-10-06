@@ -27,13 +27,22 @@ import { MultiviewMapViewState } from "../types/map-view-state";
 import { DeckglWrapper } from "../components/deckgl-wrapper";
 import { MapWrapper } from "../components/styled-common";
 import { createBuilding } from "../utils/deckgl-utils";
-
+interface Tag {
+  description?: string;
+}
 interface MapResultViewProps {
   geo: any;
   view: "firstPerson" | "map" | "orthographic";
   imageUrl: string | null;
   drawLaz: boolean;
   lazFile: NginxFile | null;
+  onLazChange: (url: NginxFile) => void;
+  drawLaz_: () => void;
+  tags: Record<string, Tag[] | Tag>;
+  previewImg?: string | null;
+  onImageChange: (value: File | null | undefined) => void;
+  onShowcaseClick: () => void;
+  setExtractedDrawerOpen: (value: boolean) => void;
 }
 
 export const MapResultView = ({
@@ -42,6 +51,15 @@ export const MapResultView = ({
   imageUrl,
   drawLaz,
   lazFile,
+  drawLaz_,
+  onLazChange,
+  tags,
+  previewImg,
+  setExtractedDrawerOpen,
+  onShowcaseClick,
+  onImageChange
+
+
 }: MapResultViewProps) => {
   const [inputs, setInputs] = useState<UserInputs>({
     lotCoverage: 50,
@@ -222,7 +240,16 @@ export const MapResultView = ({
         geojsonFileContents={geojsonFileContents}
         metrics={metrics}
         handleFileRead={handleFileRead}
+        drawLaz_={drawLaz_}
+        onLazChange={onLazChange}
+        lazFile={lazFile}
+        tags={tags}
+        previewImg={previewImg}
+        onImageChange={onImageChange}
+        onShowcaseClick={onShowcaseClick}
+        setExtractedDrawerOpen={setExtractedDrawerOpen}
       />
+      
       <MapWrapper component="main">
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           {/* <BuildingTooltip {...buildingTooltipProps} /> */}
@@ -234,6 +261,7 @@ export const MapResultView = ({
             onHover={onHoverHandler}
           />
         </Container>
+       
       </MapWrapper>
     </>
   );

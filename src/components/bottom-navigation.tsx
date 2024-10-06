@@ -14,7 +14,6 @@ import {
 import { CameraAlt, PinDrop } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { NginxFile } from "../types/nginx";
-import { LAZ_FILES_LIST_URL } from "../constants";
 import { MapViewSelect } from "./map-view-select";
 import { LAYOUT } from "../types/layout";
 
@@ -39,14 +38,7 @@ export const BottomNav = ({
 }: BottomNavProps) => {
   const [lazList, setLazList] = useState<NginxFile[]>([]);
 
-  useEffect(() => {
-    const getLazFilesList = async () => {
-      const response = await fetch(LAZ_FILES_LIST_URL);
-      const result = await response.json();
-      setLazList(result as NginxFile[]);
-    };
-    getLazFilesList();
-  }, []);
+
 
   const onLazChangeHandler = (event: SelectChangeEvent) => {
     const file = lazList.find((file) => file.name === event.target.value);
@@ -68,44 +60,20 @@ export const BottomNav = ({
             paddingLeft: "56px",
           }}
         >
-          <Paper sx={{ flexBasis: "200px", padding: "9px" }}>
-            <Stack
-              direction={"row"}
-              spacing={0.5}
-              sx={{ minWidth: "200px", maxWidth: "calc(100vw - 80px)" }}
-            >
-              <Button onClick={drawLaz}>Draw</Button>
-              <FormControl fullWidth size="small">
-                <InputLabel id="select-laz">Laz file</InputLabel>
-                <Select
-                  labelId="select-laz"
-                  value={lazFile?.name || ""}
-                  label="Laz file"
-                  onChange={onLazChangeHandler}
-                >
-                  {lazList.map((file) => (
-                    <MenuItem key={file.name} value={file.name}>
-                      {file.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Stack>
-          </Paper>
         </Box>
       )}
       <Paper
         sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
         elevation={3}
       >
-        <BottomNavigation
+        {/* <BottomNavigation
           showLabels
           value={layout}
           onChange={(event, newValue) => onChange(newValue)}
         >
           <BottomNavigationAction label="Capture" icon={<CameraAlt />} />
           <BottomNavigationAction label="Result" icon={<PinDrop />} />
-        </BottomNavigation>
+        </BottomNavigation> */}
         {(layout === LAYOUT.RESULT || layout === LAYOUT.SHOWCASE) && (
           <MapViewSelect view={view} onViewSet={onViewSet} />
         )}

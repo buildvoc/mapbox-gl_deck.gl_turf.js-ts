@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
+import LoginView from "./login-view";
 
 import ExifReader from "exifreader";
 import { Backdrop, CircularProgress, Snackbar, Alert } from "@mui/material";
@@ -17,7 +18,7 @@ import { LAYOUT } from "../types/layout";
 import { fetchBuilding } from "../api/fetch-building";
 
 export const MainView = () => {
-  const [activeLayout, setActiveLayout] = React.useState(LAYOUT.PHOTO);
+  const [activeLayout, setActiveLayout] = React.useState(LAYOUT.LOGIN);
   const ref = React.useRef<HTMLDivElement>(null);
   const [selectedImg, setSelectedImg] = useState<File | null | undefined>(
     undefined
@@ -159,10 +160,19 @@ export const MainView = () => {
   const drawLazHandler = () => {
     setDrawLaz(true);
   };
-
+  const handleLogin = async (event:string) => {
+    setActiveLayout(LAYOUT.PHOTO)
+  };
   return (
     <Box sx={{ display: "flex", height: "100vh" }} ref={ref}>
+      
       <CssBaseline />
+      {
+        activeLayout === LAYOUT.LOGIN && (
+          <LoginView onClick={handleLogin} />
+
+        )
+      }
       {activeLayout === LAYOUT.PHOTO && (
         <PhotoView
           tags={tags}
@@ -180,7 +190,14 @@ export const MainView = () => {
           imageUrl={previewImg}
           drawLaz={drawLaz}
           lazFile={lazFile}
-        />
+          onLazChange={onLazChangeHandler}
+          drawLaz_={drawLazHandler}
+          tags={tags}
+          previewImg={previewImg}
+          onImageChange={(result) => setSelectedImg(result)}
+          onShowcaseClick={() => setActiveLayout(LAYOUT.SHOWCASE)}
+          setExtractedDrawerOpen={setExtractedDrawerOpen}
+          />
       )}
       {activeLayout === LAYOUT.SHOWCASE && <MapShowcaseView view={view} />}
 
@@ -207,6 +224,7 @@ export const MainView = () => {
       </Backdrop>
       <InfoButton toggleInfo={toggleInfo} />
       <InfoModal infoOpen={infoOpen} toggleInfo={toggleInfo} />
+
     </Box>
   );
 };

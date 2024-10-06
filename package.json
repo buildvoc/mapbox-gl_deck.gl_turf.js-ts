@@ -21,9 +21,11 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@turf/turf": "^6.5.0",
+    "bootstrap": "^5.3.3",
     "exifreader": "^4.16.0",
     "moment": "^2.30.1",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.10.5",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
