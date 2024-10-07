@@ -43,6 +43,8 @@ interface MapResultViewProps {
   onImageChange: (value: File | null | undefined) => void;
   onShowcaseClick: () => void;
   setExtractedDrawerOpen: (value: boolean) => void;
+  extractedDrawerOpen: boolean;
+
 }
 
 export const MapResultView = ({
@@ -57,7 +59,9 @@ export const MapResultView = ({
   previewImg,
   setExtractedDrawerOpen,
   onShowcaseClick,
-  onImageChange
+  onImageChange,
+  extractedDrawerOpen
+
 
 
 }: MapResultViewProps) => {
@@ -248,12 +252,12 @@ export const MapResultView = ({
         onImageChange={onImageChange}
         onShowcaseClick={onShowcaseClick}
         setExtractedDrawerOpen={setExtractedDrawerOpen}
+        extractedDrawerOpen={extractedDrawerOpen}
       />
       
       <MapWrapper component="main">
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          {/* <BuildingTooltip {...buildingTooltipProps} /> */}
-
+          <BuildingTooltip {...buildingTooltipProps} />
           <DeckglWrapper
             parentViewState={viewState}
             view={view}
@@ -261,7 +265,6 @@ export const MapResultView = ({
             onHover={onHoverHandler}
           />
         </Container>
-       
       </MapWrapper>
     </>
   );

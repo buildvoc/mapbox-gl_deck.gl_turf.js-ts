@@ -66,14 +66,14 @@ export const BottomNav = ({
         sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
         elevation={3}
       >
-        {/* <BottomNavigation
+        <BottomNavigation
           showLabels
           value={layout}
           onChange={(event, newValue) => onChange(newValue)}
         >
           <BottomNavigationAction label="Capture" icon={<CameraAlt />} />
           <BottomNavigationAction label="Result" icon={<PinDrop />} />
-        </BottomNavigation> */}
+        </BottomNavigation>
         {(layout === LAYOUT.RESULT || layout === LAYOUT.SHOWCASE) && (
           <MapViewSelect view={view} onViewSet={onViewSet} />
         )}

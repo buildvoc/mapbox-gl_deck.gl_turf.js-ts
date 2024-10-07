@@ -197,9 +197,23 @@ export const MainView = () => {
           onImageChange={(result) => setSelectedImg(result)}
           onShowcaseClick={() => setActiveLayout(LAYOUT.SHOWCASE)}
           setExtractedDrawerOpen={setExtractedDrawerOpen}
+          extractedDrawerOpen={extractedDrawerOpen}
+
           />
       )}
-      {activeLayout === LAYOUT.SHOWCASE && <MapShowcaseView view={view} />}
+      {activeLayout === LAYOUT.SHOWCASE && <MapShowcaseView view={view} 
+                geo={geo}
+                drawLaz_={drawLazHandler}
+                lazFile={lazFile}
+                onLazChange={onLazChangeHandler}
+                tags={tags}
+                previewImg={previewImg}
+                onImageChange={(result) => setSelectedImg(result)}
+                onShowcaseClick={() => setActiveLayout(LAYOUT.SHOWCASE)}
+                setExtractedDrawerOpen={setExtractedDrawerOpen}
+                extractedDrawerOpen={extractedDrawerOpen}
+
+      />}
 
       <BottomNav
         layout={activeLayout}

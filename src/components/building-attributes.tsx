@@ -5,6 +5,8 @@ import {
   Divider,
   Drawer,
   FormControl,
+  ListItemText,
+  ListItem,
   InputLabel,
   IconButton,
   Select,
@@ -21,12 +23,13 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import MetricDisplay from "./metric-display/metric-display";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useMemo } from "react";
 import { NginxFile } from "../types/nginx";
 import { LAZ_FILES_LIST_URL } from "../constants";
 import {
   Menu as MenuIcon,
   Close as CloseIcon,
+  Close,
   LogoutRounded,
   CameraAlt,
   DocumentScanner
@@ -88,6 +91,7 @@ interface BuildingAttributesProps {
   previewImg?: string | null;
   onImageChange: (value: File | null | undefined) => void;
   onShowcaseClick: () => void;
+  extractedDrawerOpen: boolean;
   setExtractedDrawerOpen: (value: boolean) => void;
 
   lazFile: NginxFile | null;
@@ -122,6 +126,7 @@ export const BuildingAttributes = ({
   tags,
   onShowcaseClick,
   setExtractedDrawerOpen,
+  extractedDrawerOpen,
   drawLaz_,
   onLazChange,
 }: BuildingAttributesProps) => {
@@ -161,6 +166,7 @@ export const BuildingAttributes = ({
         return;
       }
       setExtractedDrawerOpen(open);
+      setSecondaryDrawerOpen(false)
     };
   const onFileSelectHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -193,6 +199,26 @@ export const BuildingAttributes = ({
       onLazChange(file);
     }
   };
+
+  const tagLists = useMemo(() => {
+    if (!tags) {
+      return null;
+    }
+    return Object.keys(tags).map((keyName: any, i: any) => (
+      <ListItem key={i}>
+        <ListItemText
+          primary={
+            Array.isArray(tags[keyName])
+              ? (tags[keyName] as Tag[])
+                  .map((item: any) => item.description)
+                  .join(", ")
+              : (tags[keyName] as Tag)?.description || "-"
+          }
+          secondary={keyName}
+        />
+      </ListItem>
+    ));
+  }, [tags]);
 
   return (
     <>
@@ -346,7 +372,7 @@ export const BuildingAttributes = ({
         </Box>
       </StyledDrawer>
       <SecondaryDrawer
-        anchor="top" // Set to open from top to bottom
+        anchor="top" 
         variant="persistent"
         open={secondaryDrawerOpen}
         onClose={toggleSecondaryDrawer}
@@ -361,7 +387,6 @@ export const BuildingAttributes = ({
           <IconButton onClick={toggleSecondaryDrawer}>
             <CloseIcon sx={{ color: "white" }} /> {/* Cross mark icon */}
           </IconButton>
-          {/* <Typography>Secondary Drawer Content</Typography> */}
         </Toolbar>
         <Divider />
         <List
@@ -388,7 +413,6 @@ export const BuildingAttributes = ({
             Release notes
           </Link>
 
-        {/* Todo Move: Take Again, Upload Again and MetaData Results options here */}
         <Stack spacing={2} direction="column" style={{marginBottom: "40px" }}>
               <Button
                 component="label"
@@ -488,6 +512,33 @@ export const BuildingAttributes = ({
           </Link>
         </Box>
       </SecondaryDrawer>
+      <Drawer
+        anchor={"left"}
+        variant="persistent"
+        onClose={toggleExtractedDrawer(false)}
+        open={extractedDrawerOpen}
+      >
+        <Toolbar
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            px: [1],
+          }}
+        >
+          Extracted Metadata
+          <IconButton onClick={toggleExtractedDrawer(false)}>
+            {<Close />}
+          </IconButton>
+        </Toolbar>
+        <Divider />
+        <List
+          dense={true}
+          sx={{ width: 300, maxWidth: 300, bgcolor: "background.paper" }}
+        >
+          {tagLists}
+        </List>
+      </Drawer>
     </>
   );
 };

@@ -3,28 +3,102 @@ import { DeckglWrapper } from "../components/deckgl-wrapper";
 import { Layer, PickingInfo } from "@deck.gl/core/typed";
 import { useEffect, useMemo, useState } from "react";
 import { Gallery, GalleryImage } from "../types/gallery";
-import {
-  get_unassigned_photos,
-  get_photo,
-} from "../api/fetch-gallery";
+import { get_unassigned_photos, get_photo } from "../api/fetch-gallery";
 import { IconLayer } from "@deck.gl/layers/typed";
 import { fetchBuilding } from "../api/fetch-building";
 import { createBuilding } from "../utils/deckgl-utils";
 import { Backdrop, CircularProgress } from "@mui/material";
+import { FileContents } from "../types/file";
+import { Metrics } from "../types/metrics";
+import { UserInputs } from "../types/user-inputs";
+import heritageTrail from "../data/heritage-trail";
+import {
+  computeGeoMatrics,
+  getOffsetBehindCamera,
+} from "../utils/geo-operations";
+import { BuildingAttributes } from "../components/building-attributes";
+import { MultiviewMapViewState } from "../types/map-view-state";
+import { NginxFile } from "../types/nginx";
+
 import {
   ShowcaseTooltip,
   ShowcaseTooltipProps,
 } from "../components/showcase-tooltip";
+interface Tag {
+  description?: string;
+}
 interface MapShowcaseViewProps {
   view: "firstPerson" | "map" | "orthographic";
+  geo: any;
+  drawLaz_: () => void;
+  onLazChange: (url: NginxFile) => void;
+  lazFile: NginxFile | null;
+  tags: Record<string, Tag[] | Tag>;
+  previewImg?: string | null;
+  onImageChange: (value: File | null | undefined) => void;
+  onShowcaseClick: () => void;
+  setExtractedDrawerOpen: (value: boolean) => void;
+  extractedDrawerOpen: boolean;
+
 }
 
-export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
+export const MapShowcaseView = ({
+  view,
+  geo,
+  drawLaz_,
+  onLazChange,
+  lazFile,
+  tags,
+  previewImg,
+  onImageChange,
+  onShowcaseClick,
+  setExtractedDrawerOpen,
+  extractedDrawerOpen,
+
+  
+}: MapShowcaseViewProps) => {
   const [galleryData, setGalleryData] = useState<Gallery | null>(null);
   const [buildingLayers, setBuldingLayer] = useState<Layer[]>([]);
   const [buildingsLoading, setBuildingsLoading] = useState<boolean>(true);
+
+  const [inputs, setInputs] = useState<UserInputs>({
+    lotCoverage: 50,
+    floorNumber: 10,
+    floorHeight: 10,
+  });
+  const [layers_, setLayers] = useState<Layer[]>([]);
+  const [viewState, setViewState] = useState<MultiviewMapViewState>({
+    mapView: {
+      latitude: 46.203589,
+      longitude: 6.1369,
+      zoom: 17.5,
+      pitch: 45,
+      maxPitch: 85,
+    },
+    firstPersonView: {
+      latitude: 46.203589,
+      longitude: 6.1369,
+      position: [0, -60, 120],
+      pitch: 20,
+      maxPitch: 89,
+      bearing: 0,
+    },
+  });
+  const [geojsonFileContents, setGeojsonFileContents] = useState<FileContents>({
+    type: "",
+    coordinates: [[]],
+  });
+
+  const [metrics, setMetrics] = useState<Metrics>({
+    landArea: 0,
+    buildingArea: 0,
+    volume: 0,
+    buildingHeight: inputs.floorHeight * inputs.floorNumber,
+  });
+
   //local sotrage
-  const [galleryDataForBuilding, setGalleryDataForBuilding] = useState<Gallery | null>(null);
+  const [galleryDataForBuilding, setGalleryDataForBuilding] =
+    useState<Gallery | null>(null);
   const [showcaseTooltipProps, setShowcaseTooltipProps] =
     useState<ShowcaseTooltipProps>({
       show: false,
@@ -84,7 +158,7 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
             photo: `data:image/jpeg;base64,${result.photo}`,
             exif_data_taken_at: result.created,
             long_description: result.note,
-            exif_data_altitude:result.alt,
+            exif_data_altitude: result.alt,
             exif_data_gps_img_direction: result.photo_heading,
           };
           map_unassigned_array.push(task_photo_data);
@@ -106,7 +180,6 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
     });
   }, []);
 
-
   const imageLayers: Layer[] = useMemo(() => {
     const result: Layer[] = [];
     const images = galleryData?.data.images.data;
@@ -120,7 +193,7 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
         id: `gallery-images`,
         data: images,
         getIcon: (d) => {
-          console.log("Photo data---",d)
+          console.log("Photo data---", d);
           return {
             url: d.photo,
             height: 240,
@@ -157,15 +230,14 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
     const renderBuildingAsync = async (images: GalleryImage[]) => {
       const promises = [];
       for (const image of images) {
-     
-          promises.push(
-            fetchBuilding(
-              image.exif_data_latitude,
-              image.exif_data_longitude,
-              image.exif_data_altitude,
-              image.exif_data_gps_img_direction
-            )
-          );
+        promises.push(
+          fetchBuilding(
+            image.exif_data_latitude,
+            image.exif_data_longitude,
+            image.exif_data_altitude,
+            image.exif_data_gps_img_direction
+          )
+        );
       }
       const buildings = await Promise.all(promises);
 
@@ -185,32 +257,116 @@ export const MapShowcaseView = ({ view }: MapShowcaseViewProps) => {
       setBuldingLayer(newLayers);
       setBuildingsLoading(false);
     };
-    if(galleryData)
-    {
+    if (galleryData) {
       renderBuildingAsync(galleryData.data.images.data);
-
     }
   }, [galleryData]);
+
+  const { lotCoverage, floorNumber, floorHeight } = inputs;
+
+  const handleFileRead = (
+    isFileUpload: boolean,
+    customFileData?: string | ArrayBuffer | null
+  ) => {
+    let result = JSON.stringify(heritageTrail) as any;
+    if (customFileData) result = customFileData;
+
+    let geojson = JSON.parse(result);
+    if (!isFileUpload) geojson = geo.geojson;
+
+    const { center, landArea, buildingArea, volume } = computeGeoMatrics(
+      geojson.features[0].geometry.coordinates,
+      floorHeight,
+      floorNumber,
+      lotCoverage
+    );
+    const {
+      geometry: {
+        coordinates: [longitude, latitude],
+      },
+    } = center;
+
+    const buildingLayers = createBuilding(geojson, geo.cameraGPSData);
+    setLayers(buildingLayers);
+    const polygonElevation =
+      geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
+    const camera = geo?.cameraGPSData?.[0];
+    const bearing = camera?.bearing ? camera?.bearing : 0;
+    const fpPosition = getOffsetBehindCamera(
+      bearing,
+      polygonElevation,
+      camera?.coordinates
+    );
+    setViewState({
+      mapView: {
+        ...viewState.mapView,
+        longitude,
+        latitude,
+        zoom: 17.5,
+        position: [0, 0, polygonElevation],
+      },
+      firstPersonView: {
+        ...viewState.firstPersonView,
+        longitude: camera?.coordinates?.[0] || longitude,
+        latitude: camera?.coordinates?.[1] || latitude,
+        position: fpPosition,
+        pitch: 0,
+        bearing,
+      },
+    });
+
+    setGeojsonFileContents(geojson);
+    setMetrics({
+      landArea,
+      buildingArea,
+      buildingHeight: parseFloat(
+        geojson.features[0].properties.relativeheightmaximum
+      ),
+      volume,
+    });
+    if (!(lotCoverage === 50 && floorHeight === 10 && floorNumber === 10)) {
+      setInputs({ lotCoverage: 50, floorNumber: 10, floorHeight: 10 });
+    }
+  };
+
+
 
   const layers = useMemo(() => {
     return [...buildingLayers, ...imageLayers];
   }, [imageLayers, buildingLayers]);
 
   return (
-    <MapWrapper component="main">
-      <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={buildingsLoading}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-      <ShowcaseTooltip {...showcaseTooltipProps} />
-      <DeckglWrapper
-        parentViewState={null}
-        view={view}
-        layers={layers}
-        onHover={onHoverHandler}
+    <>
+      <BuildingAttributes
+        geojsonFileContents={geojsonFileContents}
+        metrics={metrics}
+        handleFileRead={handleFileRead}
+        drawLaz_={drawLaz_}
+        onLazChange={onLazChange}
+        lazFile={lazFile}
+        tags={tags}
+        previewImg={previewImg}
+        onImageChange={onImageChange}
+        onShowcaseClick={onShowcaseClick}
+        setExtractedDrawerOpen={setExtractedDrawerOpen}
+        extractedDrawerOpen={extractedDrawerOpen}
+
       />
-    </MapWrapper>
+      <MapWrapper component="main">
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={buildingsLoading}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        <ShowcaseTooltip {...showcaseTooltipProps} />
+        <DeckglWrapper
+          parentViewState={null}
+          view={view}
+          layers={layers}
+          onHover={onHoverHandler}
+        />
+      </MapWrapper>
+    </>
   );
 };
