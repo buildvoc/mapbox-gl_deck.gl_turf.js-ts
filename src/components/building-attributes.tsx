@@ -39,8 +39,8 @@ import { FileContents } from "../types/file";
 import heritageTrail from "../data/heritage-trail";
 import { Metrics } from "../types/metrics";
 
-const DRAWER_WIDTH: number = 350;
-const SECONDARY_DRAWER_WIDTH: number = 325;
+const DRAWER_WIDTH: number = 300;
+const SECONDARY_DRAWER_WIDTH: number = 300;
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",

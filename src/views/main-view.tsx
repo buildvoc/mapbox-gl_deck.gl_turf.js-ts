@@ -161,7 +161,7 @@ export const MainView = () => {
     setDrawLaz(true);
   };
   const handleLogin = async (event:string) => {
-    setActiveLayout(LAYOUT.PHOTO)
+    setActiveLayout(LAYOUT.SHOWCASE)
   };
   return (
     <Box sx={{ display: "flex", height: "100vh" }} ref={ref}>
