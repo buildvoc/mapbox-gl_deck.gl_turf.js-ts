@@ -12,6 +12,12 @@ import { FileContents } from "../types/file";
 import { Metrics } from "../types/metrics";
 import { UserInputs } from "../types/user-inputs";
 import heritageTrail from "../data/heritage-trail";
+import { LAZ_FILES_LIST_URL } from "../constants";
+import { load } from "@loaders.gl/core";
+import { LASLoader } from "@loaders.gl/las";
+import { transformLazData } from "../utils/projection";
+import { PointCloudLayer } from "@deck.gl/layers/typed";
+
 import {
   computeGeoMatrics,
   getOffsetBehindCamera,
@@ -31,6 +37,7 @@ interface MapShowcaseViewProps {
   view: "firstPerson" | "map" | "orthographic";
   geo: any;
   drawLaz_: () => void;
+  setGeo: any;
   onLazChange: (url: NginxFile) => void;
   lazFile: NginxFile | null;
   tags: Record<string, Tag[] | Tag>;
@@ -39,22 +46,24 @@ interface MapShowcaseViewProps {
   onShowcaseClick: () => void;
   setExtractedDrawerOpen: (value: boolean) => void;
   extractedDrawerOpen: boolean;
+  drawLaz: boolean;
 
 }
 
 export const MapShowcaseView = ({
   view,
   geo,
+  setGeo,
   drawLaz_,
   onLazChange,
   lazFile,
+  drawLaz,
   tags,
   previewImg,
   onImageChange,
   onShowcaseClick,
   setExtractedDrawerOpen,
-  extractedDrawerOpen,
-
+  extractedDrawerOpen
   
 }: MapShowcaseViewProps) => {
   const [galleryData, setGalleryData] = useState<Gallery | null>(null);
@@ -67,6 +76,8 @@ export const MapShowcaseView = ({
     floorHeight: 10,
   });
   const [layers_, setLayers] = useState<Layer[]>([]);
+  const [geoJsonlayer, setGeoJsonlayer] = useState<Layer[]>([]);
+
   const [viewState, setViewState] = useState<MultiviewMapViewState>({
     mapView: {
       latitude: 46.203589,
@@ -180,6 +191,32 @@ export const MapShowcaseView = ({
     });
   }, []);
 
+  useEffect(() => {
+    if (drawLaz && lazFile) {
+      const drawLaz = async () => {
+        const url = `${LAZ_FILES_LIST_URL}${lazFile.name}`;
+        const data = await load(url, LASLoader);
+        transformLazData(data);
+        const newLayers = layers.filter((layer) => layer.id !== "las");
+        newLayers.push(
+          new PointCloudLayer({
+            id: "las",
+            data,
+            getNormal: [0, 1, 0],
+            getColor: [0, 0, 255],
+            opacity: 1,
+            pointSize: view === "firstPerson" ? 50 : 1,
+            loaders: [LASLoader],
+          })
+        );
+        setLayers(newLayers);
+      };
+      drawLaz();
+    }
+    // eslint-disable-next-line
+  }, [drawLaz, lazFile, view]);
+
+
   const imageLayers: Layer[] = useMemo(() => {
     const result: Layer[] = [];
     const images = galleryData?.data.images.data;
@@ -203,7 +240,7 @@ export const MapShowcaseView = ({
           };
         },
 
-        getPosition: (d) => [
+        getPosition: (d:any) => [
           parseFloat(d.exif_data_longitude),
           parseFloat(d.exif_data_latitude),
           parseFloat(d.exif_data_altitude) + 10,
@@ -221,6 +258,10 @@ export const MapShowcaseView = ({
 
     return result;
   }, [galleryData]);
+
+  useEffect(() => {
+    console.log("Layers show case---",layers_)
+     }, [layers_]);
 
   useEffect(() => {
     if (!galleryData) {
@@ -246,11 +287,14 @@ export const MapShowcaseView = ({
         const buildingData = buildings[i];
         const image = images[i];
         if (buildingData) {
+          //Todo:Working here
+          setGeo({cameraGPSData:buildingData.cameraGPSData})
           const currentLayers = createBuilding(
             buildingData.geojson,
             buildingData.cameraGPSData,
             image.filename
           );
+          // console.log("New layers Show case---",newLayers);
           newLayers = newLayers.concat(currentLayers);
         }
       }
@@ -286,8 +330,11 @@ export const MapShowcaseView = ({
       },
     } = center;
 
+
     const buildingLayers = createBuilding(geojson, geo.cameraGPSData);
-    setLayers(buildingLayers);
+    // console.log("Geo json---",geojson)
+    console.log("Building layer ---",buildingLayers)
+    setGeoJsonlayer(buildingLayers);
     const polygonElevation =
       geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
     const camera = geo?.cameraGPSData?.[0];
@@ -332,8 +379,8 @@ export const MapShowcaseView = ({
 
 
   const layers = useMemo(() => {
-    return [...buildingLayers, ...imageLayers];
-  }, [imageLayers, buildingLayers]);
+    return [...buildingLayers, ...imageLayers,...layers_,...geoJsonlayer];
+  }, [imageLayers, buildingLayers,layers_,geoJsonlayer]);
 
   return (
     <>

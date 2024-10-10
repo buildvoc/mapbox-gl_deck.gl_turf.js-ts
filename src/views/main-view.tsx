@@ -209,9 +209,11 @@ export const MainView = () => {
                 tags={tags}
                 previewImg={previewImg}
                 onImageChange={(result) => setSelectedImg(result)}
+                setGeo={setGeo}
                 onShowcaseClick={() => setActiveLayout(LAYOUT.SHOWCASE)}
                 setExtractedDrawerOpen={setExtractedDrawerOpen}
                 extractedDrawerOpen={extractedDrawerOpen}
+                drawLaz={drawLaz}
 
       />}
 
@@ -223,6 +225,7 @@ export const MainView = () => {
         onViewSet={onViewSetHandler}
         onLazChange={onLazChangeHandler}
         drawLaz={drawLazHandler}
+        
       />
 
       <Snackbar open={errMsg} autoHideDuration={6000}>

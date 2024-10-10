@@ -119,6 +119,7 @@ export const MapResultView = ({
 
   useEffect(() => {
     if (drawLaz && lazFile) {
+      //TODO confirm implementation on show case as well
       const drawLaz = async () => {
         const url = `${LAZ_FILES_LIST_URL}${lazFile.name}`;
         const data = await load(url, LASLoader);
@@ -173,6 +174,10 @@ export const MapResultView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geo]);
 
+  useEffect(() => {
+    console.log("Layers map results---",layers)
+     }, [layers]);
+
   const handleFileRead = (
     isFileUpload: boolean,
     customFileData?: string | ArrayBuffer | null
@@ -196,6 +201,9 @@ export const MapResultView = ({
     } = center;
 
     const buildingLayers = createBuilding(geojson, geo.cameraGPSData);
+    //TODO: Concat building layer with showcase layer to show building.
+    console.log("LOAD GEOJSON ---",buildingLayers);
+
     setLayers(buildingLayers);
     const polygonElevation =
       geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
