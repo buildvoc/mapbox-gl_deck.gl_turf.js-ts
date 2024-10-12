@@ -76,6 +76,9 @@ export const MapShowcaseView = ({
     floorHeight: 10,
   });
   const [layers_, setLayers] = useState<Layer[]>([]);
+  const [drawLazLayer, setDrawLazLayer] = useState<any>([]);
+  const [drawLazLayerData, setDrawLazLayerData] = useState<any>([]);
+
   const [geoJsonlayer, setGeoJsonlayer] = useState<Layer[]>([]);
 
   const [viewState, setViewState] = useState<MultiviewMapViewState>({
@@ -192,30 +195,56 @@ export const MapShowcaseView = ({
   }, []);
 
   useEffect(() => {
-    if (drawLaz && lazFile) {
+    if (drawLaz && lazFile && !drawLazLayer.some((item:any)=>item.id===lazFile.name) ) {
       const drawLaz = async () => {
         const url = `${LAZ_FILES_LIST_URL}${lazFile.name}`;
         const data = await load(url, LASLoader);
+        const newLayersData = []
+        newLayersData.push({data:data,name:lazFile.name})
+        setDrawLazLayerData([...drawLazLayerData,...newLayersData])
         transformLazData(data);
-        const newLayers = layers.filter((layer) => layer.id !== "las");
-        newLayers.push(
-          new PointCloudLayer({
-            id: "las",
-            data,
-            getNormal: [0, 1, 0],
-            getColor: [0, 0, 255],
-            opacity: 1,
-            pointSize: view === "firstPerson" ? 50 : 1,
-            loaders: [LASLoader],
-          })
-        );
-        setLayers(newLayers);
+        const newLayers = []
+        //Todo: Id must be different and there is check if not same laz draw.
+          //add name in layer as well to identify it
+          
+          newLayers.push(
+            new PointCloudLayer({
+              id: lazFile.name,
+              data,
+              getNormal: [0, 1, 0],
+              getColor: [0, 0, 255],
+              opacity: 1,
+              pointSize: view === "firstPerson" ? 50 : 1,
+              loaders: [LASLoader],
+            })
+          );
+          console.log("Second Laz---",view)
+          setDrawLazLayer([...drawLazLayer,...newLayers])
       };
       drawLaz();
     }
+    
     // eslint-disable-next-line
-  }, [drawLaz, lazFile, view]);
+  }, [drawLaz, lazFile,view]);
 
+  useEffect(() => {
+    
+    const updatedLayers = drawLazLayerData.map((item:any) => {
+      let data = item.data;
+
+      return new PointCloudLayer({
+        id: item.name,
+        data,
+        getNormal: [0, 1, 0],
+        getColor: [0, 0, 255],
+        opacity: 1,
+        pointSize: view === "firstPerson" ? 50 : 1,
+        loaders: [LASLoader],
+      });
+    });
+    console.log("updatedLayers--",updatedLayers)
+    setDrawLazLayer(updatedLayers);
+  }, [view]); 
 
   const imageLayers: Layer[] = useMemo(() => {
     const result: Layer[] = [];
@@ -230,7 +259,7 @@ export const MapShowcaseView = ({
         id: `gallery-images`,
         data: images,
         getIcon: (d) => {
-          console.log("Photo data---", d);
+          // console.log("Photo data---", d);
           return {
             url: d.photo,
             height: 240,
@@ -260,8 +289,8 @@ export const MapShowcaseView = ({
   }, [galleryData]);
 
   useEffect(() => {
-    console.log("Layers show case---",layers_)
-     }, [layers_]);
+    console.log("Layers show case---",drawLazLayer)
+     }, [drawLazLayer]);
 
   useEffect(() => {
     if (!galleryData) {
@@ -333,8 +362,8 @@ export const MapShowcaseView = ({
 
     const buildingLayers = createBuilding(geojson, geo.cameraGPSData);
     // console.log("Geo json---",geojson)
-    console.log("Building layer ---",buildingLayers)
-    setGeoJsonlayer(buildingLayers);
+    // console.log("Building layer ---",buildingLayers)
+    setGeoJsonlayer([...geoJsonlayer,...buildingLayers]);
     const polygonElevation =
       geojson.features?.[0]?.geometry?.coordinates?.[0]?.[0]?.[2] || 0;
     const camera = geo?.cameraGPSData?.[0];
@@ -379,8 +408,8 @@ export const MapShowcaseView = ({
 
 
   const layers = useMemo(() => {
-    return [...buildingLayers, ...imageLayers,...layers_,...geoJsonlayer];
-  }, [imageLayers, buildingLayers,layers_,geoJsonlayer]);
+    return [...buildingLayers, ...imageLayers,...drawLazLayer,...geoJsonlayer];
+  }, [imageLayers, buildingLayers,drawLazLayer,geoJsonlayer]);
 
   return (
     <>
