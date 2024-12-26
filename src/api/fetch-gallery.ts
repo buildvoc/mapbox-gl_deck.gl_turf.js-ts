@@ -1,11 +1,11 @@
-let endpoint="https://api.pic2bim.co.uk/"
+let endpoint="https://pic2bim.co.uk/"
 
 export const get_photo = async (photo_id: number) => {
   "use server";
 
   try {
     const response = await fetch(
-      `${endpoint}comm_get_photo.php?photo_id=${photo_id}`,
+      `${endpoint}comm_get_photo?photo_id=${photo_id}`,
       {
         method: "POST",
         headers: {
@@ -33,7 +33,7 @@ export const get_unassigned_photos = async (user_id: number) => {
 
   try {
     const response = await fetch(
-      `${endpoint}comm_unassigned.php?user_id=${user_id}`,
+      `${endpoint}comm_unassigned?user_id=${user_id}`,
       {
         method: "POST",
         headers: {
