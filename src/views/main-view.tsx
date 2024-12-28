@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect} from "react";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import LoginView from "./login-view";
-
 import ExifReader from "exifreader";
 import { Backdrop, CircularProgress, Snackbar, Alert } from "@mui/material";
-
 import { MapResultView } from "./map-result-view";
 import { InfoModal } from "../components/info-modal";
 import { BottomNav } from "../components/bottom-navigation";
@@ -29,6 +27,7 @@ export const MainView = () => {
   useKeyboard(setView);
   const [lazFile, setLazFile] = useState<null | NginxFile>(null);
   const [drawLaz, setDrawLaz] = useState<boolean>(false);
+  const [bearerToken, setBearerToken] = useState<string>('');
 
   useEffect(() => {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
@@ -157,10 +156,10 @@ export const MainView = () => {
     setLazFile(file);
   };
 
-  const drawLazHandler = () => {
+  const drawLazHandler = () =>  {
     setDrawLaz(true);
   };
-  const handleLogin = async (event:string) => {
+  const handleLogin = () => {
     setActiveLayout(LAYOUT.SHOWCASE)
   };
   return (
@@ -169,7 +168,7 @@ export const MainView = () => {
       <CssBaseline />
       {
         activeLayout === LAYOUT.LOGIN && (
-          <LoginView onClick={handleLogin} />
+          <LoginView onClick={handleLogin} setBearerToken={setBearerToken}  />
 
         )
       }
@@ -198,7 +197,6 @@ export const MainView = () => {
           onShowcaseClick={() => setActiveLayout(LAYOUT.SHOWCASE)}
           setExtractedDrawerOpen={setExtractedDrawerOpen}
           extractedDrawerOpen={extractedDrawerOpen}
-
           />
       )}
       {activeLayout === LAYOUT.SHOWCASE && <MapShowcaseView view={view} 
@@ -214,6 +212,8 @@ export const MainView = () => {
                 setExtractedDrawerOpen={setExtractedDrawerOpen}
                 extractedDrawerOpen={extractedDrawerOpen}
                 drawLaz={drawLaz}
+                bearerToken={bearerToken}
+
 
       />}
 

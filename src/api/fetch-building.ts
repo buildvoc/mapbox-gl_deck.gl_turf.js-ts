@@ -33,6 +33,7 @@ export const fetchBuilding = async (
       ],
     };
   }
+
   // alert("No records found in our database");
   return null;
 };

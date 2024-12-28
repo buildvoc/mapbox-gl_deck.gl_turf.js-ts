@@ -1,6 +1,6 @@
 let endpoint="https://pic2bim.co.uk/"
 
-export const get_photo = async (photo_id: number) => {
+export const get_photo = async (photo_id: number, bearerToken:string) => {
   "use server";
 
   try {
@@ -10,6 +10,8 @@ export const get_photo = async (photo_id: number) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${bearerToken}`, 
+
         },
       }
     );
@@ -28,9 +30,9 @@ export const get_photo = async (photo_id: number) => {
   }
 };
 
-export const get_unassigned_photos = async (user_id: number) => {
+export const get_unassigned_photos = async (user_id: number,bearerToken:string) => {
   "use server";
-
+  console.log("Bearer token applied ---",bearerToken)
   try {
     const response = await fetch(
       `${endpoint}comm_unassigned?user_id=${user_id}`,
@@ -38,6 +40,8 @@ export const get_unassigned_photos = async (user_id: number) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${bearerToken}`, 
+
         },
       }
     );

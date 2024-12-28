@@ -47,7 +47,7 @@ interface MapShowcaseViewProps {
   setExtractedDrawerOpen: (value: boolean) => void;
   extractedDrawerOpen: boolean;
   drawLaz: boolean;
-
+  bearerToken: string
 }
 
 export const MapShowcaseView = ({
@@ -63,18 +63,18 @@ export const MapShowcaseView = ({
   onImageChange,
   onShowcaseClick,
   setExtractedDrawerOpen,
-  extractedDrawerOpen
-  
+  extractedDrawerOpen,
+  bearerToken
 }: MapShowcaseViewProps) => {
   const [galleryData, setGalleryData] = useState<Gallery | null>(null);
   const [buildingLayers, setBuldingLayer] = useState<Layer[]>([]);
   const [buildingsLoading, setBuildingsLoading] = useState<boolean>(true);
-
   const [inputs, setInputs] = useState<UserInputs>({
     lotCoverage: 50,
     floorNumber: 10,
     floorHeight: 10,
   });
+
   const [layers_, setLayers] = useState<Layer[]>([]);
   const [drawLazLayer, setDrawLazLayer] = useState<any>([]);
   const [drawLazLayerData, setDrawLazLayerData] = useState<any>([]);
@@ -159,9 +159,9 @@ export const MapShowcaseView = ({
 
       var task_photo_data;
       var map_unassigned_array = [];
-      let photos_ids = await get_unassigned_photos(3);
+      let photos_ids = await get_unassigned_photos(3,bearerToken);
       for (let id of photos_ids) {
-        const result = await get_photo(id);
+        const result = await get_photo(id,bearerToken);
 
         // photos_array.push(result)
         if (result.photo.length > 0) {

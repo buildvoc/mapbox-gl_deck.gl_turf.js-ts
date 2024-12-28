@@ -1,8 +1,20 @@
 'use client'
 import styles from "../views/login.module.css";
-import {useState } from "react";
-
-const LoginView = ({onClick}:any) => {
+import {
+  PropsWithChildren,
+  MouseEventHandler
+} from "react";
+const LoginView = ({
+  onClick,
+  setBearerToken
+}:PropsWithChildren<{
+  onClick:MouseEventHandler<HTMLButtonElement>,
+  setBearerToken: React.Dispatch<React.SetStateAction<string>>
+}>) => {
+  const handleChange = (event:any) => {
+    const newValue = event.target.value;
+    setBearerToken(newValue)
+  };
 
   return (
     <div className={styles.container}>
@@ -39,6 +51,23 @@ const LoginView = ({onClick}:any) => {
                   id="password"
                   name="password"
                   type="password"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label itemType="name" title="Login:" className={styles.label}>
+                bearerAuth  (http, Bearer)
+                :
+                </label>
+              </td>
+              <td>
+                <input
+                  className={`form-control ${styles.form_control}`}
+                  id="token"
+                  name="token"
+                  type="text"
+                  onChange={handleChange} 
                 />
               </td>
             </tr>
