@@ -1,10 +1,10 @@
 import { MapWrapper } from "../components/styled-common";
 import { DeckglWrapper } from "../components/deckgl-wrapper";
-import { Layer, PickingInfo } from "@deck.gl/core/typed";
+import { Layer, PickingInfo } from "@deck.gl/core";
 import { useEffect, useMemo, useState } from "react";
 import { Gallery, GalleryImage } from "../types/gallery";
 import { get_unassigned_photos, get_photo } from "../api/fetch-gallery";
-import { IconLayer } from "@deck.gl/layers/typed";
+import { IconLayer } from "@deck.gl/layers";
 import { fetchBuilding } from "../api/fetch-building";
 import { createBuilding } from "../utils/deckgl-utils";
 import { Backdrop, CircularProgress } from "@mui/material";
@@ -16,7 +16,7 @@ import { LAZ_FILES_LIST_URL } from "../constants";
 import { load } from "@loaders.gl/core";
 import { LASLoader } from "@loaders.gl/las";
 import { transformLazData } from "../utils/projection";
-import { PointCloudLayer } from "@deck.gl/layers/typed";
+import { PointCloudLayer } from "@deck.gl/layers";
 
 import {
   computeGeoMatrics,
@@ -198,7 +198,7 @@ export const MapShowcaseView = ({
     if (drawLaz && lazFile && !drawLazLayer.some((item:any)=>item.id===lazFile.name) ) {
       const drawLaz = async () => {
         const url = `${LAZ_FILES_LIST_URL}${lazFile.name}`;
-        const data = await load(url, LASLoader);
+        const data :any = await load(url, LASLoader);
         const newLayersData = []
         newLayersData.push({data:data,name:lazFile.name})
         setDrawLazLayerData([...drawLazLayerData,...newLayersData])

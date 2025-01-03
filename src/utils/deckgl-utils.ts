@@ -1,10 +1,10 @@
-import { Layer } from "@deck.gl/core/typed";
-import { GeoJsonLayer, IconLayer, PolygonLayer } from "@deck.gl/layers/typed";
-import { ScenegraphLayer } from "@deck.gl/mesh-layers/typed";
+import { Layer } from "@deck.gl/core";
+import { GeoJsonLayer, IconLayer, PolygonLayer } from "@deck.gl/layers";
+import { ScenegraphLayer } from "@deck.gl/mesh-layers";
 import { FeatureCollection } from "@turf/turf";
 
 export const createBuilding = (
-  building: FeatureCollection,
+  building: any,
   cameraGPSData: any,
   nameSuffix?: string
 ): Layer[] => {

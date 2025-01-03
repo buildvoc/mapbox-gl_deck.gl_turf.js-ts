@@ -7,12 +7,12 @@ import {
   MapController,
   MapView,
   PickingInfo,
-} from "@deck.gl/core/typed";
-import { DeckGL } from "@deck.gl/react/typed";
+} from "@deck.gl/core";
+import { DeckGL } from "@deck.gl/react";
 import { MultiviewMapViewState } from "../types/map-view-state";
-import { ViewStateChangeParameters } from "@deck.gl/core/typed/controllers/controller";
+import { ViewStateChangeParameters } from "@deck.gl/core";
 import { useEffect, useMemo, useState } from "react";
-import { TerrainLayer } from "@deck.gl/geo-layers/typed";
+import { TerrainLayer } from "@deck.gl/geo-layers";
 
 interface DeckglWrapperProps {
   parentViewState: MultiviewMapViewState | null;

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 
-import { Layer, PickingInfo } from "@deck.gl/core/typed";
-import { PointCloudLayer } from "@deck.gl/layers/typed";
+import { Layer, PickingInfo } from "@deck.gl/core";
+import { PointCloudLayer } from "@deck.gl/layers";
 import { LASLoader } from "@loaders.gl/las";
 
 import { FileContents } from "../types/file";
@@ -122,7 +122,7 @@ export const MapResultView = ({
       //TODO confirm implementation on show case as well
       const drawLaz = async () => {
         const url = `${LAZ_FILES_LIST_URL}${lazFile.name}`;
-        const data = await load(url, LASLoader);
+        const data :any = await load(url, LASLoader);
         transformLazData(data);
         const newLayers = layers.filter((layer) => layer.id !== "las");
         newLayers.push(
