@@ -13,7 +13,8 @@ import { MultiviewMapViewState } from "../types/map-view-state";
 import { ViewStateChangeParameters } from "@deck.gl/core";
 import { useEffect, useMemo, useState } from "react";
 import { TerrainLayer } from "@deck.gl/geo-layers";
-
+import { FullscreenWidget,ZoomWidget, CompassWidget} from '@deck.gl/widgets';
+import '@deck.gl/widgets/stylesheet.css';
 interface DeckglWrapperProps {
   parentViewState: MultiviewMapViewState | null;
   view: "firstPerson" | "map" | "orthographic";
@@ -169,6 +170,27 @@ export const DeckglWrapper = ({
       onHover={onHover}
       layers={[...commonLayers, ...layers]}
       views={VIEWS}
+      widgets={view !== "firstPerson"? [
+        new FullscreenWidget({
+          placement:"top-right",
+          style:{top:"40px",position:"absolute",
+            right:"5px"
+          }
+          
+        }),
+        new ZoomWidget({
+          placement:"top-right",
+          style:{top:"80px",position:"absolute",right:"5px"
+
+          }
+        }),
+        
+        new CompassWidget({
+          placement:"top-right",
+          style:{top:"150px",position:"absolute",right:"5px" }
+        })
+      ]:[]}
+      
       effects={[
         new LightingEffect({
           ambientLight: new AmbientLight({

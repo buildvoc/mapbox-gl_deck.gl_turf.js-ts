@@ -8,6 +8,7 @@
     "@deck.gl/layers": "^9.0.38",
     "@deck.gl/mesh-layers": "^9.0.38",
     "@deck.gl/react": "^9.0.38",
+    "@deck.gl/widgets": "^9.0.38",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@fontsource/roboto": "^4.5.8",
